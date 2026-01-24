@@ -1,0 +1,36 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: sentra-user-service
+  cloud:
+    nacos:
+      discovery:
+        server-addr: localhost:8848
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://172.16.107.15:5434/sentra_user
+    username: postgres
+    password: 123456
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+sa-token:
+  token-name: satoken
+  timeout: 2592000
+  active-timeout: -1
+  is-concurrent: true
+  is-share: true
+  token-style: uuid
+  is-read-body: false
+  is-read-header: true
+
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true

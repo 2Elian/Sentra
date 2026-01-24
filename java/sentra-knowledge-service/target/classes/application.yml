@@ -1,0 +1,41 @@
+server:
+  port: 8082
+
+spring:
+  application:
+    name: sentra-knowledge-service
+  cloud:
+    nacos:
+      discovery:
+        server-addr: localhost:8848
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://172.16.107.15:5434/sentra_knowledge
+    username: postgres
+    password: 123456
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+  data:
+    mongodb:
+      uri: mongodb://172.16.107.15:27017/sentra_doc
+    elasticsearch:
+      uris: http://172.16.107.15:9200
+  neo4j:
+    uri: bolt://172.16.107.15:7687
+    authentication:
+      username: neo4j
+      password: neo4j123
+  rabbitmq:
+    host: 172.16.107.15
+    port: 5672
+    username: admin
+    password: 123456
+
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true

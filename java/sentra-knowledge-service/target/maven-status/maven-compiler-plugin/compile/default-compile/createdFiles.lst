@@ -1,0 +1,13 @@
+com\sentra\knowledge\service\IDocumentService.class
+com\sentra\knowledge\entity\KnowledgeBase.class
+com\sentra\knowledge\enums\DocumentParseStrategy.class
+com\sentra\knowledge\enums\KnowledgeType.class
+com\sentra\knowledge\controller\DocumentController.class
+com\sentra\knowledge\service\impl\KnowledgeBaseServiceImpl.class
+com\sentra\knowledge\mapper\DocumentMapper.class
+com\sentra\knowledge\SentraKnowledgeApplication.class
+com\sentra\knowledge\mapper\KnowledgeBaseMapper.class
+com\sentra\knowledge\controller\KnowledgeBaseController.class
+com\sentra\knowledge\service\impl\DocumentServiceImpl.class
+com\sentra\knowledge\entity\Document.class
+com\sentra\knowledge\service\IKnowledgeBaseService.class

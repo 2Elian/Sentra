@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <!-- 引入 Spring Boot 默认配置 -->
+    <include resource="org/springframework/boot/logging/logback/defaults.xml" />
+    <include resource="org/springframework/boot/logging/logback/console-appender.xml" />
+
+    <!-- 获取应用名称 -->
+    <springProperty scope="context" name="springAppName" source="spring.application.name" />
+
+    <!-- 定义日志文件路径 -->
+    <property name="LOG_HOME" value="G:/项目成果打包/基于图结构的文档问答助手/logs/java" />
+    <property name="LOG_FILE" value="${LOG_HOME}/${springAppName}/${springAppName}.log" />
+
+    <!-- 定义日志格式 -->
+    <property name="FILE_LOG_PATTERN" value="%d{yyyy-MM-dd HH:mm:ss.SSS} - ${springAppName} - %level - %msg%n" />
+
+    <!-- 文件输出 Appender -->
+    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_FILE}</file>
+        <encoder>
+            <pattern>${FILE_LOG_PATTERN}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+
+        <!-- 滚动策略：按时间 + 大小 -->
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <!-- 日志文件输出文件名 -->
+            <fileNamePattern>${LOG_HOME}/${springAppName}/${springAppName}-%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <!-- 单个日志文件大小 -->
+            <maxFileSize>50MB</maxFileSize>
+            <!-- 日志文件保留天数 -->
+            <maxHistory>7</maxHistory>
+            <!-- 限制日志文件总大小（可选，此处根据需求设置总备份数量，SizeAndTimeBasedRollingPolicy 默认按天+Index滚动） -->
+            <!-- Logback 没有直接的 backupCount 对应配置，通常通过 maxHistory 控制天数。
+                 如果需要严格控制文件数量，totalSizeCap 是更常见的限制。这里我们依赖 maxHistory=7 和 maxFileSize=50MB -->
+        </rollingPolicy>
+    </appender>
+
+    <!-- 根日志级别 -->
+    <root level="INFO">
+        <appender-ref ref="CONSOLE" />
+        <appender-ref ref="FILE" />
+    </root>
+
+</configuration>

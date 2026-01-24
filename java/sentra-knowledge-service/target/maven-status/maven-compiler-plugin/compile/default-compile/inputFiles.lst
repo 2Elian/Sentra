@@ -1,0 +1,13 @@
+G:\项目成果打包\基于图结构的文档问答助手\dev\java-dev\java\sentra\sentra-knowledge-service\src\main\java\com\sentra\knowledge\controller\DocumentController.java
+G:\项目成果打包\基于图结构的文档问答助手\dev\java-dev\java\sentra\sentra-knowledge-service\src\main\java\com\sentra\knowledge\controller\KnowledgeBaseController.java
+G:\项目成果打包\基于图结构的文档问答助手\dev\java-dev\java\sentra\sentra-knowledge-service\src\main\java\com\sentra\knowledge\entity\Document.java
+G:\项目成果打包\基于图结构的文档问答助手\dev\java-dev\java\sentra\sentra-knowledge-service\src\main\java\com\sentra\knowledge\entity\KnowledgeBase.java
+G:\项目成果打包\基于图结构的文档问答助手\dev\java-dev\java\sentra\sentra-knowledge-service\src\main\java\com\sentra\knowledge\enums\DocumentParseStrategy.java
+G:\项目成果打包\基于图结构的文档问答助手\dev\java-dev\java\sentra\sentra-knowledge-service\src\main\java\com\sentra\knowledge\enums\KnowledgeType.java
+G:\项目成果打包\基于图结构的文档问答助手\dev\java-dev\java\sentra\sentra-knowledge-service\src\main\java\com\sentra\knowledge\mapper\DocumentMapper.java
+G:\项目成果打包\基于图结构的文档问答助手\dev\java-dev\java\sentra\sentra-knowledge-service\src\main\java\com\sentra\knowledge\mapper\KnowledgeBaseMapper.java
+G:\项目成果打包\基于图结构的文档问答助手\dev\java-dev\java\sentra\sentra-knowledge-service\src\main\java\com\sentra\knowledge\SentraKnowledgeApplication.java
+G:\项目成果打包\基于图结构的文档问答助手\dev\java-dev\java\sentra\sentra-knowledge-service\src\main\java\com\sentra\knowledge\service\IDocumentService.java
+G:\项目成果打包\基于图结构的文档问答助手\dev\java-dev\java\sentra\sentra-knowledge-service\src\main\java\com\sentra\knowledge\service\IKnowledgeBaseService.java
+G:\项目成果打包\基于图结构的文档问答助手\dev\java-dev\java\sentra\sentra-knowledge-service\src\main\java\com\sentra\knowledge\service\impl\DocumentServiceImpl.java
+G:\项目成果打包\基于图结构的文档问答助手\dev\java-dev\java\sentra\sentra-knowledge-service\src\main\java\com\sentra\knowledge\service\impl\KnowledgeBaseServiceImpl.java

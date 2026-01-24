@@ -1,0 +1,17 @@
+G:\项目成果打包\基于图结构的文档问答助手\dev\java-dev\java\sentra\sentra-user-service\src\main\java\com\sentra\user\controller\AuthController.java
+G:\项目成果打包\基于图结构的文档问答助手\dev\java-dev\java\sentra\sentra-user-service\src\main\java\com\sentra\user\controller\TenantController.java
+G:\项目成果打包\基于图结构的文档问答助手\dev\java-dev\java\sentra\sentra-user-service\src\main\java\com\sentra\user\dto\LoginRequest.java
+G:\项目成果打包\基于图结构的文档问答助手\dev\java-dev\java\sentra\sentra-user-service\src\main\java\com\sentra\user\dto\RegisterRequest.java
+G:\项目成果打包\基于图结构的文档问答助手\dev\java-dev\java\sentra\sentra-user-service\src\main\java\com\sentra\user\dto\UpdateUserRequest.java
+G:\项目成果打包\基于图结构的文档问答助手\dev\java-dev\java\sentra\sentra-user-service\src\main\java\com\sentra\user\entity\Tenant.java
+G:\项目成果打包\基于图结构的文档问答助手\dev\java-dev\java\sentra\sentra-user-service\src\main\java\com\sentra\user\entity\User.java
+G:\项目成果打包\基于图结构的文档问答助手\dev\java-dev\java\sentra\sentra-user-service\src\main\java\com\sentra\user\enums\TenantStatus.java
+G:\项目成果打包\基于图结构的文档问答助手\dev\java-dev\java\sentra\sentra-user-service\src\main\java\com\sentra\user\enums\TenantType.java
+G:\项目成果打包\基于图结构的文档问答助手\dev\java-dev\java\sentra\sentra-user-service\src\main\java\com\sentra\user\enums\UserRole.java
+G:\项目成果打包\基于图结构的文档问答助手\dev\java-dev\java\sentra\sentra-user-service\src\main\java\com\sentra\user\mapper\TenantMapper.java
+G:\项目成果打包\基于图结构的文档问答助手\dev\java-dev\java\sentra\sentra-user-service\src\main\java\com\sentra\user\mapper\UserMapper.java
+G:\项目成果打包\基于图结构的文档问答助手\dev\java-dev\java\sentra\sentra-user-service\src\main\java\com\sentra\user\SentraUserApplication.java
+G:\项目成果打包\基于图结构的文档问答助手\dev\java-dev\java\sentra\sentra-user-service\src\main\java\com\sentra\user\service\impl\TenantServiceImpl.java
+G:\项目成果打包\基于图结构的文档问答助手\dev\java-dev\java\sentra\sentra-user-service\src\main\java\com\sentra\user\service\impl\UserServiceImpl.java
+G:\项目成果打包\基于图结构的文档问答助手\dev\java-dev\java\sentra\sentra-user-service\src\main\java\com\sentra\user\service\ITenantService.java
+G:\项目成果打包\基于图结构的文档问答助手\dev\java-dev\java\sentra\sentra-user-service\src\main\java\com\sentra\user\service\IUserService.java
