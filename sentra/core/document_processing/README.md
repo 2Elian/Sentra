@@ -1,0 +1,3 @@
+# sentra-document_processing
+
+sentra.core.document_processing是用于构建知识库过程种文档划分策略的功能

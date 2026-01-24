@@ -285,7 +285,7 @@ class KgBuilder:
         """
         # core1: 提取实体和关系的时候 要有全局视角 --> 假设第一章和第二章之间的某个实体之间有关联 这种情况 这个实体-关系-实体就必须被挖掘出来
         
-        # core2: 如果合同太大 大几十页甚至几百页的情况 --> 如何挖掘出来所有的实体和关系 保证没有遗漏呢? 另外，LLM上下文溢出怎么处理? 
+        # core2: 如果document太大 大几十页甚至几百页的情况 --> 如何挖掘出来所有的实体和关系 保证没有遗漏呢? 另外，LLM上下文溢出怎么处理? 
         
         # core3: 实体模型的定义和关系模型的定义 --> 要不断的根据业务badcase来迭代
         
@@ -361,7 +361,7 @@ if __name__ == "__main__":
     import asyncio
     llm_sentra = LLMFactory.create_llm_cli()
     builder = KgBuilder(llm_sentra)
-    md_content = """填写你的合同文本
+    md_content = """填写你的ducoment
     """
     contract_id = "27"
     result = asyncio.run(builder.build_graph(md_content, contract_id))
