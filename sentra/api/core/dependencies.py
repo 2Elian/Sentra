@@ -10,7 +10,7 @@ from typing import Optional, Union
 from sentra.core.llm_server import LLMFactory
 from sentra.core.knowledge_graph.graph_store import neo4j_importer
 from sentra.core.knowledge_graph import KgBuilder
-from sentra.core.agents import GenerateService
+from sentra.core.agents import GenerateService, OCRAgent
 
 class sentraFactory(ABC):
 
@@ -39,6 +39,10 @@ class ProductionWorkflowFactory(sentraFactory):
         return KgBuilder(self.llm_sentra)
     def create_self_qa_workflow(self) -> GenerateService:
         return GenerateService(llm_sentra=self.llm_sentra)
+    def create_md_parser_workflow(self) -> OCRAgent:
+        return OCRAgent(llm_cli=self.llm_sentra)
+
+
 
 _factory: Optional[sentraFactory] = None
 
@@ -55,3 +59,6 @@ async def get_kgBuilder_async() -> KgBuilder:
 async def get_generatorSerivce_async() -> GenerateService:
     factory = await get_factory()
     return factory.create_self_qa_workflow()
+async def get_ocrService_async() -> OCRAgent:
+    factory = await get_factory()
+    return factory.create_md_parser_workflow()

@@ -1,7 +1,11 @@
-com\sentra\common\filter\TenantContextFilter.class
 com\sentra\common\context\TenantContext.class
+com\sentra\common\ocr\OcrResponse.class
+com\sentra\common\enums\KnowledgeScope.class
+com\sentra\common\ocr\OcrProperties.class
+com\sentra\common\filter\TenantContextFilter.class
+com\sentra\common\ocr\OcrClient.class
 com\sentra\common\entity\BaseEntity.class
 com\sentra\common\config\SentraCommonAutoConfiguration.class
 com\sentra\common\enums\DocumentStatus.class
-com\sentra\common\enums\KnowledgeScope.class
+com\sentra\common\exception\BusinessException.class
 com\sentra\common\result\Result.class

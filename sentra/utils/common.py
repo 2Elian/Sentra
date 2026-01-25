@@ -15,6 +15,16 @@ import asyncio
 import functools
 from hashlib import md5
 
+def contains_think_tag(text: str) -> bool:
+    """
+    判断文本中是否包含 <think> 标签
+    :param text: 输入文本
+    :return: 如果包含 <think> 返回 True，否则返回 False
+    """
+    if text is None:
+        return False
+    return "<think>" in text
+
 def compute_args_hash(*args):
     return md5(str(args).encode()).hexdigest()
 

@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException
 
 from sentra import settings
 from sentra.utils.common import normalize_result, serialize_item
-from sentra.utils.logger import selfqa_logger as logger
+from sentra.utils.logger import knowledgeBase_logger as logger
 from sentra.api.core.dependencies import get_generatorSerivce_async
 from sentra.api.models.selfqa import selfQaResponse
 from sentra.api.models.selfqa import SelfQaRequest, SelfQaSubgrapnResponse

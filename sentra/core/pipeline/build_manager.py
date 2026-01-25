@@ -67,6 +67,9 @@ class BuildResult(BaseModel):
     vector_store: Optional[BaseVectorStore] = None
     graph_data: Dict[str, Any] = Field(default_factory=dict)
     stats: Dict[str, Any] = Field(default_factory=dict)
+    model_config = {
+        "arbitrary_types_allowed": True
+    }
 
 
 class PipelineManager:

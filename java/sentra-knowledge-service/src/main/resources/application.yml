@@ -22,7 +22,7 @@ spring:
         dialect: org.hibernate.dialect.PostgreSQLDialect
   data:
     mongodb:
-      uri: mongodb://172.16.107.15:27017/sentra_doc
+      uri: mongodb://admin:admin123@172.16.107.15:27017/sentra_doc?authSource=admin
     elasticsearch:
       uris: http://172.16.107.15:9200
   neo4j:
@@ -39,3 +39,21 @@ spring:
 mybatis-plus:
   configuration:
     map-underscore-to-camel-case: true
+
+sentra:
+  storage:
+    graph-path: G:\项目成果打包\基于图结构的文档问答助手\logs\sentra\graph
+    sftp:
+      host: 172.16.107.15
+      port: 22
+      username: 202312150002
+      password: 20001017aA@
+      upload-path: /data/lzm/sentra/data/files
+      ocr-output-path: /data/lzm/sentra/data/ocr_result
+  ocr:
+    api-url: http://172.16.107.15:30000/file_parse
+    backend: hybrid-auto-engine
+    connect-timeout: 300000
+    read-timeout: 1200000
+  python:
+    base-url: http://localhost:8000

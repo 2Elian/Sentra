@@ -6,7 +6,7 @@ into chunks for vector and graph indexing.
 """
 
 from abc import ABC, abstractmethod
-from typing import List, Optional
+from typing import List, Optional, Any
 from sentra.core.models import Document, Chunk, ChunkStrategy
 from sentra.utils.common import compute_content_hash
 

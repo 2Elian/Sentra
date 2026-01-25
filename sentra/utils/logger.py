@@ -62,8 +62,7 @@ def setup_logger(name: str) -> logging.Logger:
 # Create a default logger for the package
 logger = setup_logger("sentra-api")
 # api logger
-selfqa_logger = setup_logger(name="sentra-api.selfqa")
-cckg_logger = setup_logger(name="sentra-api.cckg")
+knowledgeBase_logger = setup_logger(name="sentra-api.knowledgeBase")
 
 # other service logger
 llm_logger = setup_logger(name="sentra-llmService")

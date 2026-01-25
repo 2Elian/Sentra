@@ -1,7 +1,7 @@
 import asyncio
 from typing import Tuple, List, Any, Union, TypeAlias
 
-from sentra.utils.logger import selfqa_logger
+from sentra.utils.logger import knowledgeBase_logger
 from sentra import settings
 from sentra.core.agents.base import Community
 from sentra.core.knowledge_graph.graph_store import NetworkXStorage
@@ -26,7 +26,7 @@ class SubGraphBuilder:
         elif settings.kg.sub_graph_method == "dfs":
             self.partitioner = DFSPartitioner()
         self.partitioner_leiden = LeidenPartitioner()
-        self.logger = selfqa_logger
+        self.logger = knowledgeBase_logger
 
     async def __call__(self, namespaces) -> Tuple[ComplexType, ComplexType]:
         kg_instance = NetworkXStorage(

@@ -1,2 +1,3 @@
 from .kg_extraction import KG_EXTRACTION_PROMPT
 from .kg_summary import KG_SUMMARIZATION_PROMPT
+from .rechore_md import RECHORE_MD_TEMPLATE

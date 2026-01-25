@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 from typing import Any, Optional
 
 from sentra.core.llm_server import BaseLLMClient
-from sentra.utils.logger import selfqa_logger as logger
+from sentra.utils.logger import knowledgeBase_logger as logger
 from sentra.utils.common import compute_content_hash, detect_main_language
 from sentra.core.templates.selfqa import AGGREGATED_GENERATION_PROMPT, COT_GENERATION_PROMPT, MULTI_HOP_GENERATION_PROMPT
 

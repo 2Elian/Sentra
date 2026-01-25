@@ -3,6 +3,7 @@ try:
 except ImportError:
     from contextlib2 import asynccontextmanager # type: ignore
 import os
+import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from datetime import datetime
@@ -11,8 +12,8 @@ from sentra.api.middleware import register_exception_handlers
 from sentra import settings
 from sentra.utils import setup_logger, logger
 from sentra.api.core import get_factory
-from sentra.api.router import cckg_router, selfqa_router
-import uvicorn
+from sentra.api.router import knowledge_router, selfqa_router
+
 os.environ['HTTP_PROXY'] = ''
 os.environ['HTTPS_PROXY'] = ''
 os.environ['http_proxy'] = ''
@@ -33,7 +34,7 @@ async def lifespan(fastapi_app: FastAPI):
 def create_app() -> FastAPI:
     app = FastAPI(
         title=settings.app.name,
-        description="Welcome to sentra: a Contract Review Agent",
+        description="Welcome to sentra",
         version=settings.app.version,
         lifespan=lifespan,
         docs_url="/docs",
@@ -50,7 +51,7 @@ def create_app() -> FastAPI:
     register_exception_handlers(app)
     
     # Include routers
-    app.include_router(cckg_router, prefix=settings.app.api_prefix)
+    app.include_router(knowledge_router, prefix=settings.app.api_prefix)
     app.include_router(selfqa_router, prefix=settings.app.api_prefix)
 
     @app.get("/", tags=["Root"])

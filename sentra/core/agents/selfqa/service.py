@@ -10,7 +10,7 @@ from typing import Any, List, Tuple, Dict
 from sentra import settings
 from sentra.utils.run_concurrent import run_concurrent
 from sentra.core.llm_server import BaseLLMClient
-from sentra.utils.logger import selfqa_logger as logger
+from sentra.utils.logger import knowledgeBase_logger as logger
 from sentra.core.agents.selfqa.generator import AggregatedGenerator, MultiHopGenerator, CoTGenerator
 from sentra.core.agents.selfqa.sub_graph import SubGraphBuilder
 

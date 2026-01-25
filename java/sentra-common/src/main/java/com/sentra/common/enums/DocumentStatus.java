@@ -11,8 +11,10 @@ import lombok.Getter;
 public enum DocumentStatus {
     UPLOADED("已上传"),
     PARSING("解析中"),
-    READY("就绪"),
-    FAILED("解析失败");
+    READY("解析完成"),
+    KB_BUILDING("知识库构建中"),
+    COMPLETED("全部完成"),
+    FAILED("失败");
 
     private final String description;
 }
