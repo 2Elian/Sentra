@@ -27,6 +27,7 @@ Sentra aims to utilize graph structures to answer questions about the content of
 * **User management**: Supports isolation of knowledge bases and Q&A systems in multi-tenant scenarios, with permission control based on sa-token;
 * **Knowledge base management**: Supports private and general knowledge bases. Supports parsing and management of knowledge bases in PDF format;
 * **Document-based Chat Service**: Graph the document, and all user questions will be answered based on this graph and the private domain + general database
+* **Native development**: pip install sentra sentra-core, Sentra is a completely natively developed document-to-knowledge base question-and-answer assistant.
 
 ## Architecture
 

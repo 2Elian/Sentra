@@ -27,6 +27,7 @@ Sentra旨在利用图结构对文档的内容进行问答，所有的提问都�
 *   **用户管理**: 支持多租户场景下对知识库、问答进行隔离，基于sa-token的权限控制;
 *   **知识库管理**: 支持私域和通用知识库。支持pdf格式的知识库解析与管理;
 *   **基于文档的Chat服务**: 将文档图谱化, 用户的所有提问都将基于这张图谱与私域+通用数据库完成问答.
+*   **原生开发**: sentra是一个完全原生开发的文档到知识库的问答助手.
 
 ## 🏗 技术架构
 
@@ -77,4 +78,4 @@ pedding
 
 ## Star
 
-[![Star History Chart](https://api.star-history.com/svg?repos=2Elian/cra&type=Date&theme=radical)](https://star-history.com/#2Elian/cra&Date)
+[![Star History Chart](https://api.star-history.com/svg?repos=2Elian/Sentra&type=Date&theme=radical)](https://star-history.com/#2Elian/Sentra&Date)
