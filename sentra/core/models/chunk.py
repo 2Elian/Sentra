@@ -38,6 +38,7 @@ class Chunk(BaseModel):
     """
     chunk_id: str = Field(..., description="Unique chunk identifier")
     doc_id: str = Field(..., description="Source document ID")
+    kb_id: str = Field(..., description="知识库所属id")
     section_id: Optional[str] = Field(
         default=None,
         description="Source section ID if applicable"

@@ -2,12 +2,12 @@
 # -*- coding: utf-8 -*-
 # @Time    : 2026/1/14 23:10
 # @Author  : lizimo@nuist.edu.cn
-# @File    : selfqa.py
+# @File    : gqag.py
 # @Description:
 from typing import Optional, Dict, Any, List, Tuple, Union
 from pydantic import BaseModel
 
-class SelfQaRequest(BaseModel):
+class gqagRequest(BaseModel):
     namespace: str
 
 
@@ -19,7 +19,7 @@ class SubgraphSummary(BaseModel):
     nodes_sample: List[str]  # 节点示例
     edges_sample: List[str]  # 边示例
 
-class SelfQaSubgrapnResponse(BaseModel):
+class gqagSubgrapnResponse(BaseModel):
     """SELF-QA 子图生成响应"""
     status: str
     batches: list[
@@ -41,7 +41,7 @@ class SelfQaSubgrapnResponse(BaseModel):
     ]
 ]
 
-class selfQaResponse(BaseModel):
+class gqagResponse(BaseModel):
     status: str
     aggregated: List[Dict[str, Any]]
     multi_hop: List[Dict[str, Any]]

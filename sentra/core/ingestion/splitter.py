@@ -155,6 +155,7 @@ class RecursiveSplitter(BaseSplitter):
 
         return chunks
 
+# TODO: Late Chunk @https://zhuanlan.zhihu.com/p/720243414 and @https://github.com/jina-ai/late-chunking/tree/main
 
 class StructureAwareSplitter(BaseSplitter):
     """

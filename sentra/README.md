@@ -10,7 +10,7 @@
 
 ## TODO3: 知识库构建深度适配
 
-## TODO4: selfqa优化
+## TODO4: gqag优化
 
 ## TODO5: 检索逻辑
 

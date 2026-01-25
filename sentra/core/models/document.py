@@ -22,12 +22,14 @@ class Document(BaseModel):
     Represents a complete document with hierarchical sections.
 
     Attributes:
+        kb_id (str): Unique knowledge base identifier
         doc_id: Unique identifier for the document
         title: Document title
         original_source: Original source file or content
         sections: Flat list of sections (hierarchy maintained via level and parent_id)
         metadata: Additional metadata about the document
     """
+    kb_id: str = Field(..., description="Unique knowledgeBase identifier")
     doc_id: str = Field(..., description="Unique document identifier")
     title: str = Field(..., description="Document title")
     original_source: str = Field(..., description="Original source content or file path")

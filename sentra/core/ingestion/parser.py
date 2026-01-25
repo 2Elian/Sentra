@@ -25,6 +25,7 @@ class MarkdownParser:
     def parse(
         cls,
         markdown_content: str,
+        kb_id: Optional[str] = None,
         doc_id: Optional[str] = None,
         title: Optional[str] = None,
         metadata: Optional[Dict[str, Any]] = None
@@ -34,6 +35,7 @@ class MarkdownParser:
 
         Args:
             markdown_content: Raw markdown text content
+            kb_id: KnowledgeBase id
             doc_id: Optional document ID (auto-generated if not provided)
             title: Optional document title (derived from first H1 if not provided)
             metadata: Optional metadata dictionary
@@ -41,11 +43,9 @@ class MarkdownParser:
         Returns:
             Document object with hierarchical sections
         """
-        from sentra.utils.common import compute_content_hash
-
-        # Generate doc_id if not provided
-        if doc_id is None:
-            doc_id = compute_content_hash(markdown_content, prefix="doc-")
+        # 校验
+        if doc_id is None or kb_id is None:
+            raise ValueError("Must provide doc_id and kb_id")
 
         # Extract title from first H1 or use default
         if title is None:
@@ -59,8 +59,11 @@ class MarkdownParser:
             metadata = {}
         metadata.setdefault('total_length', len(markdown_content))
         metadata.setdefault('section_count', len(sections))
+        metadata.setdefault('kb_id', kb_id)
+        metadata.setdefault('doc_id', doc_id)
 
         return Document(
+            kb_id=kb_id,
             doc_id=doc_id,
             title=title,
             original_source=markdown_content,

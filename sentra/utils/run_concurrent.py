@@ -7,17 +7,19 @@ T = TypeVar("T")
 R = TypeVar("R")
 
 async def run_concurrent(
-    coro_fn: Callable[[T], Awaitable[R]],
+    coro_fn: Callable[..., Awaitable[R]],
     items: List[T],
-    *,
+    *coro_args,
     desc: str = "processing",
     unit: str = "item",
+    **coro_kwargs,
 ) -> List[R]:
-    tasks = [asyncio.create_task(coro_fn(it)) for it in items]
+    tasks = [
+        asyncio.create_task(coro_fn(it, *coro_args, **coro_kwargs))
+        for it in items
+    ]
 
-    completed_count = 0
     results = []
-
     pbar = tqdm_async(total=len(items), desc=desc, unit=unit)
 
     for future in asyncio.as_completed(tasks):
@@ -26,14 +28,10 @@ async def run_concurrent(
             results.append(result)
         except Exception as e:  # pylint: disable=broad-except
             logger.exception("Task failed: %s", e)
-            # even if failed, record it to keep results consistent with tasks
             results.append(e)
+        finally:
+            pbar.update(1)
 
-        completed_count += 1
-        pbar.update(1)
     pbar.close()
 
-    # filter out exceptions
-    results = [res for res in results if not isinstance(res, Exception)]
-
-    return results
+    return [res for res in results if not isinstance(res, Exception)]

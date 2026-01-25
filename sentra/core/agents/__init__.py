@@ -1,2 +1,2 @@
-from .selfqa import GenerateService
+from .gqag import GenerateService
 from .ocr.service import OCRAgent

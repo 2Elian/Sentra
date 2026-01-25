@@ -1,9 +1,10 @@
 import re
 from collections import Counter, defaultdict
+from typing import List, Tuple, Dict, Optional
 
 from sentra import settings
-from sentra.core.document_processing import chunk_documents, Chunk
-from sentra.core.knowledge_graph.graph_store import BaseGraphStorage, NetworkXStorage, neo4j_importer
+from sentra.core.models import Chunk
+from sentra.core.storage.graph_store import BaseGraphStorage, NetworkXStorage
 from sentra.core.templates.kg import KG_EXTRACTION_PROMPT, KG_SUMMARIZATION_PROMPT
 from sentra.utils.common import (
     detect_main_language, pack_history_conversations,
@@ -11,9 +12,9 @@ from sentra.utils.common import (
     handle_single_relationship_extraction, compute_content_hash,
     time_record
 )
+
 from sentra.core.llm_server import BaseLLMClient
 from sentra.utils.run_concurrent import run_concurrent
-from sentra.core.knowledge_graph.models import *
 from sentra.utils.logger import knowledgeBase_logger
 
 
@@ -36,12 +37,12 @@ class KgBuilder:
 
         Args:
             chunk: Chunk of custom def Object
+            entity_types: 关于实体类型的定义
+            entity_types_des: 关于实体类型的描述
         Returns:
             Dictionary containing extracted entities, relationships, and metadata
         """
-        contract_content = chunk.content
-        contract_id = chunk.id
-        self.logger.info(f"Starting entity and relation extraction from id=:{contract_id}")
+        contract_content = chunk.content_text
         if not contract_content:
             self.logger.error("No contract content provided for extraction")
             raise ValueError("Contract content must be provided")
@@ -100,12 +101,12 @@ class KgBuilder:
                     inner, [KG_EXTRACTION_PROMPT["FORMAT"]["tuple_delimiter"]]
                 )
 
-                entity = await handle_single_entity_extraction(attributes, chunk.id)
+                entity = await handle_single_entity_extraction(attributes, chunk.chunk_id)
                 if entity is not None:
                     nodes[entity["entity_name"]].append(entity)
                     continue
 
-                relation = await handle_single_relationship_extraction(attributes, chunk.id)
+                relation = await handle_single_relationship_extraction(attributes, chunk.chunk_id)
                 if relation is not None:
                     key = (relation["src_id"], relation["tgt_id"])
                     edges[key].append(relation)
@@ -241,29 +242,10 @@ class KgBuilder:
         )
         return new_description
 
-    async def _split_chunks(self, md_content: str, contract_id: str) -> List[Chunk]:
-        new_docs = {
-            compute_content_hash(md_content, prefix="md-"): {
-                "content": md_content
-            }
-        }
-        inserting_chunks = await chunk_documents(
-            new_docs,
-            settings.kg.chunk_size,
-            settings.kg.chunk_overlap,
-            self.llm_sentra.tokenizer,
-            text_id=contract_id
-        )
-        inserting_chunks = {
-            k: v for k, v in inserting_chunks.items()
-        }
-        chunks = [
-            Chunk(id=k, content=v["content"]) for k, v in inserting_chunks.items()
-        ]
-        return chunks
-
     @time_record
-    async def build_graph(self, md_content: Optional[str] = None, contract_id: Optional[str] = None) -> Tuple[
+    async def build_graph(self, chunks: List[Chunk],
+                          doc_id: Optional[str] = None, kb_id: Optional[str] = None,
+                          entity_types = None, entity_types_des = None) -> Tuple[
         list[tuple[str, dict]],
         list[tuple[str, str, dict]],
         str
@@ -273,13 +255,12 @@ class KgBuilder:
         then merge the results.
 
         Args:
-            md_content: str --> the contract raw content of the ocr
+            chunks: List[chunks]
             contract_id: Optional unique identifier for the contract
 
         Returns:
             Dictionary containing merged extracted entities, relationships, and metadata
         """
-        self.logger.info(f"Starting extract entity and relation for {contract_id} contract_id")
         """
         # core1: 提取实体和关系的时候 要有全局视角 --> 假设第一章和第二章之间的某个实体之间有关联 这种情况 这个实体-关系-实体就必须被挖掘出来
 
@@ -304,20 +285,19 @@ class KgBuilder:
             powerlaw_r2	度分布幂律拟合的 R² 值	数值越高越好（> 0.75） --> 度分布：统计图中不同度数（k）的节点数量分布 --> 幂律分布：很多真实网络（社交网络、互联网等）的度分布遵循 P(k) ∝ k^(-γ) 的规律,即少数节点有很多连接（hub节点）, 多数节点只有少量连接 --> R² 值含义: 衡量度分布符合幂律的程度 R² ∈ [0, 1]，越接近1表示拟合越好
             is_robust	布尔值，指示是否满足所有阈值	通过/失败指示器
         """
-
-        # step1: Chapter divisions for md_content
-        init_chunks = await self._split_chunks(md_content, contract_id)
         # step2: Local Extraction --> 局部强召回 这一步的目标是“宁可错杀，不可放过”, 在小范围内，尽可能多地把所有潜在的实体和关系都找出来。
         results = await run_concurrent(
             self.local_perception_recognition,
-            init_chunks,
-            desc="sentra.cckg: Extracting entities and relationships from chunks",
+            chunks,
+            entity_types,
+            entity_types_des,
+            desc="sentra.doc2kg: Extracting entities and relationships from chunks",
             unit="chunk",
         )
         namespace_postfix = compute_content_hash(md_content)
-        namespace = f"{settings.kg.namespace}_{contract_id}_{namespace_postfix}"
+        namespace = f"{settings.kg.namespace}_{kb_id}_{doc_id}_{namespace_postfix}"
         kg_instance = NetworkXStorage(
-            settings.kg.working_dir, namespace=namespace
+            f"{settings.kg.working_dir}/{kb_id}/{namespace}", namespace=namespace
         )
         # step3: 全局拓扑对齐 --> 将不同文本块中抽取的同一个实体统一成一个全局ID。
         nodes = defaultdict(list)
@@ -331,15 +311,15 @@ class KgBuilder:
         await run_concurrent(
             lambda kv: self.merge_nodes(kv, kg_instance=kg_instance),
             list(nodes.items()),
-            desc="sentra.cckg: Inserting entities into storage",
+            desc="sentra.doc2kg: Inserting entities into storage",
         )
         await run_concurrent(
             lambda kv: self.merge_edges(kv, kg_instance=kg_instance),
             list(edges.items()),
-            desc="sentra.cckg: Inserting relationships into storage",
+            desc="sentra.doc2kg: Inserting relationships into storage",
         )
         g = await kg_instance.get_graph()
-        file_name = f"{settings.kg.working_dir}/{namespace}.graphml"
+        file_name = f"{settings.kg.working_dir}/{kb_id}/{namespace}/{namespace}.graphml"
         NetworkXStorage.write_nx_graph(graph=g, file_name=file_name)
         return_nodes = await kg_instance.get_all_nodes()
         return_egdes = await kg_instance.get_all_edges()
