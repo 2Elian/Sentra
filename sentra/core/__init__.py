@@ -24,16 +24,12 @@ from .ingestion import (
 )
 
 from .indexing.vector import (
-    BaseEmbedder,
-    OpenAIEmbedder,
     EmbeddingService,
 )
 
 from .indexing.graph import (
     GraphExtractor,
     EntityResolver,
-    CommunityDetector,
-    CommunitySummarizer,
 )
 
 from .storage import (
@@ -44,8 +40,13 @@ from .storage import (
 
 from .pipeline import (
     BuildConfiguration,
-    PipelineManager,
+    KnowledgeBasePipelineManager,
     BuildResult,
+)
+
+from .llm_server import (
+    OpenAIClient,
+    OpenAIEmbedder,
 )
 
 __all__ = [
@@ -66,15 +67,11 @@ __all__ = [
     "StructureAwareSplitter",
 
     # Vector Indexing
-    "BaseEmbedder",
-    "OpenAIEmbedder",
     "EmbeddingService",
 
     # Graph Indexing
     "GraphExtractor",
     "EntityResolver",
-    "CommunityDetector",
-    "CommunitySummarizer",
 
     # Storage
     "BaseVectorStore",
@@ -83,6 +80,10 @@ __all__ = [
 
     # Pipeline
     "BuildConfiguration",
-    "PipelineManager",
+    "KnowledgeBasePipelineManager",
     "BuildResult",
+
+    # llm and embedding
+    "OpenAIClient",
+    "OpenAIEmbedder"
 ]
