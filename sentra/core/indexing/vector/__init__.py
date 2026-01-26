@@ -6,13 +6,9 @@ semantic search capabilities.
 """
 
 from .embedder import (
-    BaseEmbedder,
-    OpenAIEmbedder,
     EmbeddingService,
 )
 
 __all__ = [
-    "BaseEmbedder",
-    "OpenAIEmbedder",
     "EmbeddingService",
 ]

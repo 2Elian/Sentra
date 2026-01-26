@@ -1,0 +1,8 @@
+kg:
+  working_dir: 'G:\项目成果打包\基于图结构的文档问答助手\logs\sentra\graph'
+  namespace: "graph"
+  max_loop: 3
+  max_summary_tokens: 200
+  chunk_size: 1024
+  chunk_overlap: 200
+  sub_graph_method: "bfs"

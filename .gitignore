@@ -75,6 +75,7 @@ replay_pid*
 __pycache__/
 *.py[cod]
 *$py.class
+/sentra/examples
 
 # logs
 logs/

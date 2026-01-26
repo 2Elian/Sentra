@@ -6,8 +6,6 @@ graph processing for knowledge base construction.
 """
 
 from .vector import (
-    BaseEmbedder,
-    OpenAIEmbedder,
     EmbeddingService,
 )
 from .graph import (
@@ -18,8 +16,6 @@ from .graph import (
 )
 
 __all__ = [
-    "BaseEmbedder",
-    "OpenAIEmbedder",
     "EmbeddingService",
     "GraphExtractor",
     "EntityResolver",

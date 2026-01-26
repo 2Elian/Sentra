@@ -4,6 +4,7 @@ Pipeline manager for orchestrating knowledge base construction.
 This module provides the main orchestrator that coordinates all
 stages of the ETL pipeline.
 """
+import asyncio
 import os
 import json
 from typing import Optional, Dict, Any, List
@@ -12,10 +13,11 @@ from sentra.utils.logger import logger
 
 from sentra.core.models import Chunk, Entity, Relation, Community, ChunkStrategy
 from sentra.core.ingestion import MarkdownParser, SplitterFactory
-from sentra.core.indexing.vector import EmbeddingService, OpenAIEmbedder
-from sentra.core.indexing.graph import GraphExtractor, EntityResolver, CommunityDetector, CommunitySummarizer
+from sentra.core.indexing.vector import EmbeddingService
+from sentra.core.models.embeddings import EMBED_DIM
+from sentra.core.indexing.graph import GraphExtractor
 from sentra.core.storage import InMemoryVectorStore, BaseVectorStore
-from sentra.core.llm_server import BaseLLMClient, LLMFactory
+from sentra.core.llm_server import BaseLLMClient, LLMFactory, BaseEmbedder
 from sentra.core.agents import GenerateService
 from sentra import settings
 
@@ -28,23 +30,13 @@ class BuildConfiguration(BaseModel):
         chunk_strategy: Chunking strategy to use
         chunk_size: Maximum chunk size
         chunk_overlap: Overlap between chunks
-        enable_vector_index: Whether to build vector index
-        enable_graph_index: Whether to build graph index
-        enable_communities: Whether to detect communities (GraphRAG)
         embedding_model: Name of embedding model
-        community_algorithm: Community detection algorithm
     """
-    chunk_strategy: ChunkStrategy = ChunkStrategy.RECURSIVE
-    chunk_size: int = 1024
-    chunk_overlap: int = 100
+    chunk_strategy: ChunkStrategy = ChunkStrategy(settings.embeddings.chunk_strategy)
+    chunk_size: int = settings.embeddings.chunk_size
+    chunk_overlap: int = settings.embeddings.chunk_overlap
 
-    enable_vector_index: bool = True
-    enable_graph_index: bool = True
-    enable_communities: bool = True
-
-    embedding_model: str = "text-embedding-3-small"
-    community_algorithm: str = "leiden"
-
+    embedding_model: str = settings.embeddings.model_name
     metadata: Dict[str, Any] = Field(default_factory=dict)
 
 
@@ -77,24 +69,22 @@ class BuildResult(BaseModel):
     }
 
 
-class PipelineManager:
+class KnowledgeBasePipelineManager:
     """
     Orchestrates the knowledge base construction pipeline.
 
     This manager coordinates all stages:
     1. Parsing (Markdown -> Document)
     2. Chunking (Document -> Chunks)
-    3. Vector Indexing (Chunks -> Vector Store)
-    4. Graph Extraction (Chunks -> Entities + Relations)
-    5. Entity Resolution (Deduplication)
-    6. Community Detection (Optional)
-    7. Community Summarization (Optional)
+    3. parallel Vector Indexing (Chunks -> Vector Store) and Graph Extraction (Chunks -> Entities + Edges)
+    4. Graph Question Answer Generate
     """
 
     def __init__(
         self,
         config: BuildConfiguration,
         llm_client: Optional[BaseLLMClient] = None,
+        embedding_client: Optional[BaseEmbedder] = None,
         vector_store: Optional[BaseVectorStore] = None
     ):
         """
@@ -107,42 +97,25 @@ class PipelineManager:
         """
         self.config = config
         self.llm_client = llm_client or LLMFactory.create_llm_cli()
-
-        # Initialize vector store
         if vector_store is None:
-            # Determine embedding dimension
-            dimension_map = {
-                "text-embedding-3-small": 1536,
-                "text-embedding-3-large": 3072,
-                "text-embedding-ada-002": 1536,
-            }
-            dimension = dimension_map.get(config.embedding_model, 1536)
+            dimension = EMBED_DIM.get(settings.embeddings.model_name)
             self.vector_store = InMemoryVectorStore(embedding_dimension=dimension)
         else:
             self.vector_store = vector_store
 
         # Initialize components
-        self.embedder = OpenAIEmbedder(
-            model_name=config.embedding_model
-        )
+        self.embedder = embedding_client
         self.embedding_service = EmbeddingService(self.embedder)
-
-        if config.enable_graph_index:
-            self.graph_extractor = GraphExtractor(llm_client=self.llm_client)
-            self.entity_resolver = EntityResolver()
-
-            if config.enable_communities:
-                self.community_detector = CommunityDetector(
-                    algorithm=config.community_algorithm
-                )
-                self.community_summarizer = CommunitySummarizer(llm_client=self.llm_client)
-            self.ggqa_agent = GenerateService(llm_sentra=self.llm_client)
+        self.graph_extractor = GraphExtractor(llm_client=self.llm_client)
+        self.gqag_agent = GenerateService(llm_sentra=self.llm_client)
 
     async def build_knowledge_base(
         self,
         markdown_content: str,
+        kb_id: Optional[str] = None,
         doc_id: Optional[str] = None,
-        title: Optional[str] = None
+        title: Optional[str] = None,
+        entity_types=None, entity_types_des=None
     ) -> BuildResult:
         """
         Build knowledge base from markdown content.
@@ -159,7 +132,7 @@ class PipelineManager:
 
         # Step 1: Parse markdown
         logger.info("[1/5] Parsing markdown document...")
-        document = MarkdownParser.parse(markdown_content, doc_id=doc_id, title=title)
+        document = MarkdownParser.parse(markdown_content, kb_id=kb_id, doc_id=doc_id, title=title)
         logger.info(f"  - Parsed {len(document.sections)} sections")
 
         # Step 2: Chunk document
@@ -173,39 +146,29 @@ class PipelineManager:
         chunks = splitter.split(document)
         logger.info(f"  - Created {len(chunks)} chunks")
 
-        # Step 3: Vector indexing (parallel with graph processing)
-        if self.config.enable_vector_index:
-            logger.info("[3/5] Generating embeddings...")
-            chunks_with_embeddings = await self.embedding_service.embed_chunks(chunks)
-            await self.vector_store.add_chunks(chunks_with_embeddings)
-            logger.info(f"  - Embedded {len(chunks_with_embeddings)} chunks")
-        else:
-            chunks_with_embeddings = chunks
+        # step3-4: 并行处理 向量化和图谱化
+        logger.info("[3-4/5] Generating embeddings and extracting graph in parallel...")
+        embeddings_task = self.embedding_service.embed_chunks(chunks)
+        graph_task = self.graph_extractor.extract(chunks, doc_id, kb_id, entity_types, entity_types_des)
+        chunks_with_embeddings, (entities, edges, namespace) = await asyncio.gather(
+            embeddings_task,
+            graph_task
+        )
+        await self.vector_store.add_chunks(chunks_with_embeddings)
+        logger.info(f"  - Embedded {len(chunks_with_embeddings)} chunks")
+        logger.info(f"  - Extracted {len(entities)} entities, {len(edges)} edges")
 
-        # Step 4: Graph extraction
-        if self.config.enable_graph_index:
-            logger.info("[4/5] Extracting entities and relations...")
-            entities, edges, namespace = await self.graph_extractor.extract(chunks_with_embeddings)
-            logger.info(f"  - Extracted {len(entities)} entities, {len(edges)} edges")
         # Step 5: Graph Question Answer pair Generate = gqag-agent
-            logger.info("[5/5] Graph Question Answer pair Generate...")
-            results_aggregated, results_multihop, results_cot = await self.ggqa_agent.build(namespace, document.kb_id)
-            save_dir = f"{settings.kg.working_dir}/{document.kb_id}/{namespace}"
-            os.makedirs(save_dir, exist_ok=True)
-            save_path_aggregated = f"{save_dir}/aggregated.json"
-            save_path_multihop = f"{save_dir}/multi_hop.json"
-            save_path_cot = f"{save_dir}/cot.json"
-            with open(save_path_aggregated, 'w', encoding='utf-8') as f:
-                json.dump(results_aggregated, f, ensure_ascii=False, indent=2)
-            with open(save_path_multihop, 'w', encoding='utf-8') as f:
-                json.dump(results_multihop, f, ensure_ascii=False, indent=2)
-            with open(save_path_cot, 'w', encoding='utf-8') as f:
-                json.dump(results_cot, f, ensure_ascii=False, indent=2)
-            qa_pair = results_aggregated + results_multihop + results_cot
+        logger.info("[5/5] Graph Question Answer pair Generate...")
+        results_aggregated, results_multihop, results_cot = await self.gqag_agent.build(namespace, kb_id)
+        save_dir = f"{settings.kg.working_dir}/{kb_id}/{namespace}"
+        self._save_qa_pair(save_dir, results_aggregated, results_multihop, results_cot)
+        qa_pair = results_aggregated + results_multihop + results_cot
+
         # Build result
         result = BuildResult(
-            kb_id=document.kb_id,
-            doc_id=document.doc_id,
+            kb_id=kb_id,
+            doc_id=doc_id,
             total_chunks=len(chunks),
             total_entities=len(entities),
             total_edges=len(edges),
@@ -223,9 +186,9 @@ class PipelineManager:
             }
         )
 
-        logger.info(f"Knowledge base build complete: {result.total_chunks} chunks, "
-                   f"{result.total_entities} entities, {result.total_relations} relations, "
-                   f"{result.total_communities} communities")
+        logger.info(f"Knowledge base build complete: \n{result.total_chunks} chunks;\n"
+                   f"{result.total_entities} entities;\n {result.total_edges} relations;\n "
+                   f"{result.total_qac} qa-pairs")
 
         return result
 
@@ -248,3 +211,15 @@ class PipelineManager:
         results = await self.vector_store.search(query_embedding, top_k=top_k)
         return results
         # TODO 复用retrieval包
+
+    def _save_qa_pair(self, save_dir, results_aggregated, results_multihop, results_cot):
+        os.makedirs(save_dir, exist_ok=True)
+        save_path_aggregated = f"{save_dir}/aggregated.json"
+        save_path_multihop = f"{save_dir}/multi_hop.json"
+        save_path_cot = f"{save_dir}/cot.json"
+        with open(save_path_aggregated, 'w', encoding='utf-8') as f:
+            json.dump(results_aggregated, f, ensure_ascii=False, indent=2)
+        with open(save_path_multihop, 'w', encoding='utf-8') as f:
+            json.dump(results_multihop, f, ensure_ascii=False, indent=2)
+        with open(save_path_cot, 'w', encoding='utf-8') as f:
+            json.dump(results_cot, f, ensure_ascii=False, indent=2)

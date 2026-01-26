@@ -2,11 +2,14 @@ llm:
   model_name: "qwen30b"
   temperature: 0.0
   api_key: "NuistMathAutoModelForCausalLM"
-  base_url: "http://your_ap:23333/v1"
+  base_url: "http://172.16.107.15:23333/v1"
   providers: "openai"
 
 embeddings:
-  model_name: "text-embedding-3-small"
+  model_name: "qwen3-embedding"
+  base_url: "http://172.16.107.15:23334/v1/embeddings"
+  api_key: "sentra-embedding-key"
   provider: "openai"
+  chunk_strategy: "recursive" # recursive / semantic / structure_aware
   chunk_size: 1000
   chunk_overlap: 200

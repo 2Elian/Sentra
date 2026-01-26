@@ -5,7 +5,7 @@ from langchain_core.language_models import BaseChatModel
 from sentra import settings
 from sentra.utils.logger import llm_logger as logger
 from .tokenizer import Tokenizer
-from .client import BaseLLMClient, OpenAIClient
+from .client import BaseLLMClient, OpenAIClient, OpenAIEmbedder, BaseEmbedder
 
 class LLMFactory:
     """
@@ -103,17 +103,22 @@ class LLMFactory:
         """
         Create an embedding model instance.
         """
-        from langchain_openai import OpenAIEmbeddings
-        
         if not settings:
             raise RuntimeError("Configuration not loaded")
             
         emb_config = settings.embeddings
         
         if emb_config.provider == "openai":
+            return OpenAIEmbedder()
+        elif emb_config.provider == "langchain":
+            from langchain_openai import OpenAIEmbeddings
             # Assuming shared API key or from env
             return OpenAIEmbeddings(
-                model=emb_config.model_name
+                model=settings.embeddings.model_name,
+                openai_api_base=settings.embeddings.base_url,
+                openai_api_key=settings.embeddings.api_key,
+                show_progress_bar=True
+
             )
         else:
             raise ValueError(f"Unsupported embedding provider: {emb_config.provider}")

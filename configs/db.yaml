@@ -10,6 +10,6 @@ vector_store:
 graph_store:
   type: "neo4j"
   neo4j:
-    uri: "bolt://your_ip:7687"
+    uri: "bolt://172.16.107.15:7687"
     username: "neo4j"
-    password: "your_passward"
+    password: "MyStrongPassword123"

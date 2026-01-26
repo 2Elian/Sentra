@@ -7,12 +7,12 @@ the entire knowledge base building process.
 
 from .build_manager import (
     BuildConfiguration,
-    PipelineManager,
+    KnowledgeBasePipelineManager,
     BuildResult,
 )
 
 __all__ = [
     "BuildConfiguration",
-    "PipelineManager",
+    "KnowledgeBasePipelineManager",
     "BuildResult",
 ]
