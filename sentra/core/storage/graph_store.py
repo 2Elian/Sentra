@@ -4,7 +4,7 @@ import html
 import os
 import networkx as nx
 T = TypeVar("T")
-from sentra.utils.logger import d2kg_logger as logger
+from sentra.utils.logger import knowledgeBase_logger as logger
 from .general_store import StorageNameSpace
 
 @dataclass

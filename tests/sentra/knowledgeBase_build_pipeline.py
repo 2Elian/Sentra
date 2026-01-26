@@ -22,12 +22,67 @@ os.environ['NO_PROXY'] = '*'
 os.environ['no_proxy'] = '*'
 
 from sentra import settings
-from sentra.core import (
-    PipelineManager,
+from sentra.core.pipeline import (
+    KnowledgeBasePipelineManager,
     BuildConfiguration,
-    ChunkStrategy,
 )
 from sentra.core.llm_server import LLMFactory
+
+from pydantic import BaseModel, Field
+import uuid
+from typing import Dict, Any, List, Optional, Tuple, Literal, get_args
+from enum import Enum
+class EntityTypeEnum(str, Enum):
+    # 参与方
+    ContractParty = "合同主体（甲乙方）"
+    RelatedParty = "关联方（担保人、代理人）"
+    Person = "自然人"
+    Organization = "组织机构"
+
+    # 标的物
+    Contract = "合同本身"
+    ProductService = "产品或服务"
+    RightObligation = "权利或义务"
+    IntellectualProperty = "知识产权"
+
+    # 核心条款
+    Amount = "金额"
+    DateTerm = "日期或期限"
+    Location = "地点"
+    Condition = "条件"
+    BreachClause = "违约条款"
+
+    # 时空与度量
+    SpecificTime = "具体时间"
+    TimeSpan = "时间段"
+    SpecificLocation = "具体地点"
+    Currency = "货币"
+    Unit = "度量单位"
+EntityType = Literal[
+    "ContractParty",
+    "RelatedParty",
+    "Person",
+    "Organization",
+    "Contract",
+    "ProductService",
+    "RightObligation",
+    "IntellectualProperty",
+    "Amount",
+    "DateTerm",
+    "Location",
+    "Condition",
+    "BreachClause",
+    "SpecificTime",
+    "TimeSpan",
+    "SpecificLocation",
+    "Currency",
+    "Unit"
+]
+ENTITY_DES = {
+    e.name: e.value
+    for e in EntityTypeEnum
+}
+ENTITY_LIST = list(get_args(EntityType))
 
 
 async def main():
@@ -62,32 +117,22 @@ This agreement shall be effective from January 1, 2024 to December 31, 2024.
 
     # Step 1: Create configuration
     print("\n[1] Creating build configuration...")
-    config = BuildConfiguration(
-        chunk_strategy=ChunkStrategy.RECURSIVE,
-        chunk_size=512,
-        chunk_overlap=50,
-        enable_vector_index=True,
-        enable_graph_index=True,
-        enable_communities=True,
-        embedding_model="text-embedding-3-small",
-        community_algorithm="leiden"
-    )
+    config = BuildConfiguration()
     print(f"  - Chunk Strategy: {config.chunk_strategy}")
     print(f"  - Chunk Size: {config.chunk_size}")
-    print(f"  - Enable Vector Index: {config.enable_vector_index}")
-    print(f"  - Enable Graph Index: {config.enable_graph_index}")
-    print(f"  - Enable Communities: {config.enable_communities}")
 
     # Step 2: Initialize LLM client
     print("\n[2] Initializing LLM client...")
     llm_client = LLMFactory.create_llm_cli()
+    embedding_client = LLMFactory.create_embedding_model()
     print(f"  - LLM Client created")
 
     # Step 3: Create pipeline
     print("\n[3] Creating pipeline manager...")
-    pipeline = PipelineManager(
+    pipeline = KnowledgeBasePipelineManager(
         config=config,
-        llm_client=llm_client
+        llm_client=llm_client,
+        embedding_client=embedding_client
     )
     print(f"  - Pipeline manager initialized")
 
@@ -97,8 +142,8 @@ This agreement shall be effective from January 1, 2024 to December 31, 2024.
 
     result = await pipeline.build_knowledge_base(
         markdown_content=markdown_content,
-        doc_id="example_doc_001",
-        title="Company Agreement"
+        kb_id="9eo00123490k",
+        doc_id="example_doc_001"
     )
 
     print("-" * 80)
@@ -106,43 +151,6 @@ This agreement shall be effective from January 1, 2024 to December 31, 2024.
     print(f"  - Document ID: {result.doc_id}")
     print(f"  - Total Chunks: {result.total_chunks}")
     print(f"  - Total Entities: {result.total_entities}")
-    print(f"  - Total Relations: {result.total_relations}")
-    print(f"  - Total Communities: {result.total_communities}")
-
-    # Step 6: Display extracted entities
-    print("\n[6] Sample Entities:")
-    entities = result.graph_data.get("entities", [])
-    for i, entity in enumerate(entities[:5], 1):
-        print(f"  {i}. {entity.name} ({entity.type})")
-        print(f"     Description: {entity.description[:80]}...")
-
-    # Step 7: Display extracted relations
-    print("\n[7] Sample Relations:")
-    relations = result.graph_data.get("relations", [])
-    for i, relation in enumerate(relations[:5], 1):
-        print(f"  {i}. {relation.source} -> {relation.target}")
-        print(f"     Type: {relation.type}")
-        print(f"     Description: {relation.description[:80]}...")
-
-    # Step 8: Display communities
-    print("\n[8] Communities:")
-    communities = result.graph_data.get("communities", [])
-    for i, community in enumerate(communities, 1):
-        print(f"  {i}. Community {community.community_id}")
-        print(f"     Size: {community.size} entities")
-        print(f"     Summary: {community.summary[:100]}...")
-
-    # Step 9: Search example
-    print("\n[9] Searching knowledge base...")
-    query = "What is the payment amount?"
-    print(f"  Query: {query}")
-
-    search_results = await pipeline.search(query, top_k=3)
-
-    print(f"  Found {len(search_results)} results:")
-    for i, (chunk, score) in enumerate(search_results, 1):
-        print(f"\n  Result {i} (Score: {score:.4f}):")
-        print(f"  {chunk.content_text[:150]}...")
 
     print("\n" + "=" * 80)
     print("Example complete!")

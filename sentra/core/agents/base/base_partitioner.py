@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from typing import List, Union, Any, AsyncIterator
-from sentra.core.knowledge_graph.graph_store import BaseGraphStorage
+from sentra.core.storage.graph_store import BaseGraphStorage
 
 @dataclass
 class Community:

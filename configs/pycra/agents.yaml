@@ -1,4 +1,0 @@
-agents:
-  selfqa:
-    method: "aggregated"   # multi_hop / cot
-    data_format: "ChatML"  # Sharegpt / Alpaca

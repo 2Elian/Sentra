@@ -47,6 +47,10 @@ class EmbeddingSettings(BaseModel):
     provider: str
     chunk_size: int
     chunk_overlap: int
+    base_url: str
+    api_key: str
+    chunk_strategy: str
+
 
 class MilvusSettings(BaseModel):
     host: str

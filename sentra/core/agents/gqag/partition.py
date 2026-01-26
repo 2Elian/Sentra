@@ -13,7 +13,7 @@ from collections import defaultdict
 from leidenalg import ModularityVertexPartition, find_partition
 
 from sentra.core.agents.base import BasePartitioner, Community
-from sentra.core.knowledge_graph.graph_store import BaseGraphStorage
+from sentra.core.storage.graph_store import BaseGraphStorage
 
 NODE_UNIT: str = "n"
 EDGE_UNIT: str = "e"

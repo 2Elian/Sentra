@@ -4,7 +4,7 @@ from typing import Tuple, List, Any, Union, TypeAlias
 from sentra.utils.logger import knowledgeBase_logger
 from sentra import settings
 from sentra.core.agents.base import Community
-from sentra.core.knowledge_graph.graph_store import NetworkXStorage
+from sentra.core.storage.graph_store import NetworkXStorage
 from sentra.core.agents.gqag.partition import DFSPartitioner, BFSPartitioner, LeidenPartitioner
 
 ComplexType: TypeAlias = list[
