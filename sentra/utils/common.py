@@ -15,6 +15,8 @@ import asyncio
 import functools
 from hashlib import md5
 
+from .logger import logger
+
 def contains_think_tag(text: str) -> bool:
     """
     判断文本中是否包含 <think> 标签
@@ -133,7 +135,7 @@ def time_record(func: Callable):
             start = time.perf_counter()
             result = await func(*args, **kwargs)
             end = time.perf_counter()
-            print(f"函数 {func.__name__} 执行时间: {end - start:.6f} 秒")
+            logger.info(f"Func {func.__name__} Execution time: {end - start:.3f} seconds")
             return result
         return async_wrapper
     else:
@@ -142,7 +144,7 @@ def time_record(func: Callable):
             start = time.perf_counter()
             result = func(*args, **kwargs)
             end = time.perf_counter()
-            print(f"函数 {func.__name__} 执行时间: {end - start:.6f} 秒")
+            logger.info(f"Func {func.__name__} Execution time: {end - start:.3f} seconds")
             return result
         return sync_wrapper
 

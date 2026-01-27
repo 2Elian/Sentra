@@ -243,7 +243,6 @@ class KgBuilder:
         )
         return new_description
 
-    @time_record
     async def build_graph(self, chunks: List[Chunk],
                           doc_id: Optional[str] = None, kb_id: Optional[str] = None,
                           entity_types = None, entity_types_des = None) -> Tuple[

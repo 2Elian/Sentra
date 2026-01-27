@@ -19,6 +19,7 @@ from sentra.core.indexing.graph import GraphExtractor
 from sentra.core.storage import InMemoryVectorStore, BaseVectorStore
 from sentra.core.llm_server import BaseLLMClient, LLMFactory, BaseEmbedder
 from sentra.core.agents import GenerateService
+from sentra.utils.common import time_record
 from sentra import settings
 
 
@@ -109,6 +110,7 @@ class KnowledgeBasePipelineManager:
         self.graph_extractor = GraphExtractor(llm_client=self.llm_client)
         self.gqag_agent = GenerateService(llm_sentra=self.llm_client)
 
+    @time_record
     async def build_knowledge_base(
         self,
         markdown_content: str,
@@ -173,7 +175,7 @@ class KnowledgeBasePipelineManager:
             total_entities=len(entities),
             total_edges=len(edges),
             total_qac=len(qa_pair),
-            vector_store=self.vector_store if self.config.enable_vector_index else None,
+            vector_store=self.vector_store,
             graph_data={
                 "entities": entities,
                 "edges": edges,
