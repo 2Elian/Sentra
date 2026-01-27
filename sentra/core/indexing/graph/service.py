@@ -294,8 +294,9 @@ class KgBuilder:
             desc="sentra.doc2kg: Extracting entities and relationships from chunks",
             unit="chunk",
         )
-        namespace_postfix = compute_content_hash(md_content)
-        namespace = f"{settings.kg.namespace}_{kb_id}_{doc_id}_{namespace_postfix}"
+        # namespace_postfix = compute_content_hash(md_content)
+        namespace = f"{settings.kg.namespace}_{kb_id}_{doc_id}"
+        os.makedirs(namespace, exist_ok=True)
         kg_instance = NetworkXStorage(
             f"{settings.kg.working_dir}/{kb_id}/{namespace}", namespace=namespace
         )
