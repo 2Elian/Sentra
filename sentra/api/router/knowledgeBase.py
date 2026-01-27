@@ -19,7 +19,7 @@ from sentra.utils.logger import knowledgeBase_logger as logger
 
 knowledge_router = APIRouter(prefix="/knowledge", tags=["Knowledge Service"])
 
-@knowledge_router.post("/build", response_model=D2KgRequest, tags=["Knowledge Service"], summary="完整的知识库构建pipeline接口")
+@knowledge_router.post("/build", response_model=KbPipelineReponse, tags=["Knowledge Service"], summary="完整的知识库构建pipeline接口")
 async def build_knowledge_base(request: KbPipelineRequest,
                                 factory: ProductionWorkflowFactory = Depends(get_factory),) -> KbPipelineReponse:
     try:
@@ -42,9 +42,6 @@ async def build_knowledge_base(request: KbPipelineRequest,
             status_code=500,
             detail=f"Failed to build knowledge: {str(e)}"
         )
-
-
-
 
 @knowledge_router.post("/d2kg", response_model=D2KgReponse, tags=["Knowledge Service"], summary="单个文档build图和qap接口 没有embedding")
 async def build_contract_graph(request: D2KgRequest,

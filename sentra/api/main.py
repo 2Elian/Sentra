@@ -10,9 +10,11 @@ from datetime import datetime
 
 from sentra.api.middleware import register_exception_handlers
 from sentra import settings
-from sentra.utils import setup_logger, logger
+from sentra.utils import logger
 from sentra.api.core import get_factory
-from sentra.api.router import knowledge_router, gqag_router
+from sentra.api.router import (
+    knowledge_router,
+)
 
 os.environ['HTTP_PROXY'] = ''
 os.environ['HTTPS_PROXY'] = ''
@@ -52,7 +54,7 @@ def create_app() -> FastAPI:
     
     # Include routers
     app.include_router(knowledge_router, prefix=settings.app.api_prefix)
-    app.include_router(gqag_router, prefix=settings.app.api_prefix)
+    # app.include_router(gqag_router, prefix=settings.app.api_prefix)
 
     @app.get("/", tags=["Root"])
     async def root():

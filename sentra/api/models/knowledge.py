@@ -17,9 +17,9 @@ class D2KgRequest(BaseModel):
     docID: str
     kbID: str # 这个传递过来 应该在前端让用户选一下是否入库 如果入库的话 这个值就应该是数据库里面唯一的 如果不入库的话 那么就给一个uuid
     content: str
-    title: Optional[str] = None,
-    entity_types: Optional[Any] = None
-    entity_types_des: Optional[Any] = None
+    title: Optional[str] = None
+    entity_types: Optional[List[str]] = None
+    entity_types_des: Optional[Dict[str, str]] = None
 
 class D2KgReponse(BaseModel):
     status: StatusType
@@ -31,8 +31,8 @@ class D2KgReponse(BaseModel):
 class KbPipelineRequest(BaseModel):
     docID: str
     kbID: str
-    content: str # 原始OCR结果
-    title: Optional[str] = None,
+    content: str
+    title: Optional[str] = None
     entity_types: Optional[Any] = None
     entity_types_des: Optional[Any] = None
 
