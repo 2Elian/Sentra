@@ -41,8 +41,8 @@ class EmbeddingService:
             List of chunks with embeddings populated
         """
         if show_progress:
-            from tqdm.asyncio import tqdm_async
-            chunks_iter = tqdm_async(
+            from tqdm import tqdm
+            chunks_iter = tqdm(
                 chunks,
                 desc="Embedding chunks",
                 unit="chunk"

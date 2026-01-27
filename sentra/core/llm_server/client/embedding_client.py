@@ -59,8 +59,13 @@ class OpenAIEmbedder(BaseEmbedder):
             "input": texts
         }
 
+        headers = {
+            "Authorization": f"Bearer {settings.embeddings.api_key}",
+            "Content-Type": "application/json"
+        }
+
         async with httpx.AsyncClient(timeout=60) as client:
-            resp = await client.post(self.endpoint, json=payload)
+            resp = await client.post(self.endpoint, json=payload, headers=headers)
             resp.raise_for_status()
             data = resp.json()
 
