@@ -143,7 +143,7 @@ class KnowledgeBasePipelineManager:
             chunk_overlap=self.config.chunk_overlap,
             tokenizer=self.llm_client.tokenizer
         )
-        chunks = splitter.split(document)
+        chunks = splitter.split(document, kb_id)
         logger.info(f"  - Created {len(chunks)} chunks")
 
         # step3-4: 并行处理 向量化和图谱化

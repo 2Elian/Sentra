@@ -15,7 +15,7 @@ class BaseSplitter(ABC):
     """Abstract base class for document splitters."""
 
     @abstractmethod
-    def split(self, document: Document) -> List[Chunk]:
+    def split(self, document: Document, kb_id: str) -> List[Chunk]:
         """
         Split document into chunks.
 
@@ -57,7 +57,7 @@ class RecursiveSplitter(BaseSplitter):
         # Delimiters in order of preference
         self.delimiters = ["\n\n", "\n", ". ", " ", ""]
 
-    def split(self, document: Document) -> List[Chunk]:
+    def split(self, document: Document, kb_id: str) -> List[Chunk]:
         """Split document using recursive strategy."""
         chunks = []
 
@@ -65,6 +65,7 @@ class RecursiveSplitter(BaseSplitter):
             section_chunks = self._split_text(
                 text=section.content,
                 doc_id=document.doc_id,
+                kb_id=kb_id,
                 section_id=section.section_id
             )
             chunks.extend(section_chunks)
@@ -75,18 +76,20 @@ class RecursiveSplitter(BaseSplitter):
         self,
         text: str,
         doc_id: str,
+        kb_id: str,
         section_id: Optional[str] = None
     ) -> List[Chunk]:
         """Recursively split text into chunks."""
         if self.tokenizer:
-            return self._split_by_tokens(text, doc_id, section_id)
+            return self._split_by_tokens(text, doc_id, kb_id, section_id)
         else:
-            return self._split_by_characters(text, doc_id, section_id)
+            return self._split_by_characters(text, doc_id, kb_id, section_id)
 
     def _split_by_characters(
         self,
         text: str,
         doc_id: str,
+        kb_id: str,
         section_id: Optional[str]
     ) -> List[Chunk]:
         """Split by character count."""
@@ -111,6 +114,7 @@ class RecursiveSplitter(BaseSplitter):
                 chunks.append(Chunk(
                     chunk_id=chunk_id,
                     doc_id=doc_id,
+                    kb_id=kb_id,
                     section_id=section_id,
                     content_text=chunk_text,
                     token_count=len(chunk_text),  # Approximate
@@ -126,6 +130,7 @@ class RecursiveSplitter(BaseSplitter):
         self,
         text: str,
         doc_id: str,
+        kb_id: str,
         section_id: Optional[str]
     ) -> List[Chunk]:
         """Split by token count using tokenizer."""
@@ -144,6 +149,7 @@ class RecursiveSplitter(BaseSplitter):
             chunks.append(Chunk(
                 chunk_id=chunk_id,
                 doc_id=doc_id,
+                kb_id=kb_id,
                 section_id=section_id,
                 content_text=chunk_text,
                 token_count=len(chunk_tokens),
@@ -183,7 +189,7 @@ class StructureAwareSplitter(BaseSplitter):
         self.min_chunk_size = min_chunk_size
         self.tokenizer = tokenizer
 
-    def split(self, document: Document) -> List[Chunk]:
+    def split(self, document: Document, kb_id: str) -> List[Chunk]:
         """Split document respecting section boundaries."""
         chunks = []
         pending_content = []
@@ -206,6 +212,7 @@ class StructureAwareSplitter(BaseSplitter):
                 chunks.append(Chunk(
                     chunk_id=chunk_id,
                     doc_id=document.doc_id,
+                    kb_id=kb_id,
                     section_id=current_section_id,
                     content_text=chunk_text,
                     token_count=pending_token_count if self.tokenizer else len(chunk_text),
@@ -228,6 +235,7 @@ class StructureAwareSplitter(BaseSplitter):
             chunks.append(Chunk(
                 chunk_id=chunk_id,
                 doc_id=document.doc_id,
+                kb_id=kb_id,
                 section_id=current_section_id,
                 content_text=chunk_text,
                 token_count=pending_token_count if self.tokenizer else len(chunk_text),
@@ -267,7 +275,7 @@ class SemanticSplitter(BaseSplitter):
         self.min_chunk_size = min_chunk_size
         self.max_chunk_size = max_chunk_size
 
-    def split(self, document: Document) -> List[Chunk]:
+    def split(self, document: Document, kb_id: str) -> List[Chunk]:
         """Split document using semantic boundaries."""
         # This is a simplified implementation
         # A full implementation would:
@@ -281,7 +289,7 @@ class SemanticSplitter(BaseSplitter):
             max_chunk_size=self.max_chunk_size,
             min_chunk_size=self.min_chunk_size
         )
-        return fallback_splitter.split(document)
+        return fallback_splitter.split(document, kb_id)
 
 
 class SplitterFactory:
