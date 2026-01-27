@@ -71,8 +71,19 @@ public class Document extends BaseEntity {
     private String errorMessage;
 
     /**
+     * 实体类型模板ID
+     * 指定该文档使用哪个实体类型模板进行知识图谱构建
+     */
+    private String entityTemplateId;
+
+    /**
      * Python返回的文档唯一标识
      * 用于定位图谱文件：{graphPath}/{kbId}/{documentUniqueId}.graphml
+     */
+    private String graphId;
+
+    /**
+     * 文档唯一标识
      */
     private String documentUniqueId;
 }

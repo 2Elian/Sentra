@@ -47,11 +47,68 @@ Sentra 是一个面向多租户的企业级知识问答与知识图谱平台，�
 
 ### 2. 数据库初始化
 
+#### 2.1 创建PostgreSQL数据库
+
 请在 PostgreSQL 中创建以下数据库：
+
 ```sql
 CREATE DATABASE sentra_user;
 CREATE DATABASE sentra_knowledge;
 ```
+
+如果使用Docker部署PostgreSQL，可以通过以下命令创建：
+
+```bash
+# 连接到PostgreSQL容器
+docker exec -it postgres-sentra psql -U postgres
+
+# 创建数据库
+CREATE DATABASE sentra_user;
+CREATE DATABASE sentra_knowledge;
+
+# 验证
+\l
+
+# 退出
+\q
+```
+
+#### 2.2 初始化数据库表结构
+
+创建完数据库后，需要执行SQL初始化脚本来创建表结构和初始数据。
+
+**方式一：通过Docker命令执行（推荐）**
+
+```bash
+# Windows PowerShell/CMD
+docker exec -i postgres-sentra psql -U postgres -d sentra_knowledge < "G:\项目成果打包\基于图结构的文档问答助手\dev\init_db.sql"
+
+# Linux/Mac
+docker exec -i postgres-sentra psql -U postgres -d sentra_knowledge < /path/to/init_db.sql
+```
+
+**方式二：交互式执行**
+
+```bash
+# 连接到数据库
+docker exec -it postgres-sentra psql -U postgres -d sentra_knowledge
+
+# 然后复制粘贴 init_db.sql 文件内容执行
+```
+
+**SQL脚本说明：**
+
+`init_db.sql` 脚本会创建以下表结构并插入初始数据：
+
+- `t_entity_type_template` - 实体类型模板表（如：合同领域、论文领域）
+- `t_entity_type_definition` - 实体类型定义表（具体的实体类型）
+- `t_knowledge_base` - 知识库表
+- `t_document` - 文档表
+- 系统预置数据：
+  - 合同领域模板（包含18种实体类型：合同主体、金额、日期条款等）
+  - 论文领域模板（包含8种实体类型：作者、机构、关键词等）
+
+> **注意**：`sentra_user` 数据库的表结构会在首次启动 `sentra-user-service` 时由JPA自动创建（`ddl-auto: update`配置）。
 
 ### 3. 配置修改
 

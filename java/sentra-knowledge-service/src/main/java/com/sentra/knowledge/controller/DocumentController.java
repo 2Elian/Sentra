@@ -15,7 +15,7 @@ import java.util.List;
  * 负责文档上传和文档管理
  */
 @RestController
-@RequestMapping("/v1/document")
+    @RequestMapping("/v1/document")
 @RequiredArgsConstructor
 public class DocumentController {
 
@@ -23,11 +23,17 @@ public class DocumentController {
 
     /**
      * 上传文档到知识库
+     *
+     * @param kbId 知识库ID
+     * @param entityTemplateId 实体类型模板ID（可选，不传则使用知识库的默认模板）
+     * @param file 文档文件
+     * @return 上传的文档信息
      */
     @PostMapping("/upload")
     public Result<Document> upload(@RequestParam("kbId") String kbId,
+                                   @RequestParam(value = "entityTemplateId", required = false) String entityTemplateId,
                                    @RequestParam("file") MultipartFile file) {
-        Document document = documentService.upload(kbId, file);
+        Document document = documentService.upload(kbId, entityTemplateId, file);
         return Result.success(document);
     }
 
@@ -57,11 +63,11 @@ public class DocumentController {
 
     /**
      * 删除文档
+     * 会同时删除：SFTP文件、OCR结果、Python知识库数据、本地图谱、Neo4j节点、MongoDB内容
      */
     @DeleteMapping("/{documentId}")
     public Result<Boolean> delete(@PathVariable String documentId) {
-        boolean deleted = documentService.removeById(documentId);
-        // TODO: 删除SFTP上的文件和OCR结果
+        boolean deleted = documentService.deleteDocument(documentId);
         return Result.success(deleted);
     }
 }

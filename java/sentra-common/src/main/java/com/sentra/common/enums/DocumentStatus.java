@@ -9,6 +9,7 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public enum DocumentStatus {
+    // TODO 状态统一规范
     UPLOADED("已上传"),
     PARSING("解析中"),
     READY("解析完成"),

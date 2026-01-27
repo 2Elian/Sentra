@@ -151,16 +151,19 @@ public class OcrConsumer {
         } catch (Exception e) {
             log.error("OCR任务处理失败，documentId: {}", message.getDocumentId(), e);
 
-            // 更新文档状态为失败
+            // 更新文档状态为失败并清理已创建的资源
             try {
                 Document document = documentService.getById(message.getDocumentId());
                 if (document != null) {
                     document.setStatus(DocumentStatus.FAILED);
                     document.setErrorMessage("OCR解析失败: " + e.getMessage());
                     documentService.updateById(document);
+
+                    // 清理已创建的资源：SFTP文件、OCR结果、MongoDB数据
+                    cleanupFailedDocument(document, message);
                 }
             } catch (Exception ex) {
-                log.error("更新文档失败状态时出错", ex);
+                log.error("更新文档失败状态或清理资源时出错", ex);
             }
 
             // 重试逻辑
@@ -209,10 +212,54 @@ public class OcrConsumer {
             log.error("超过最大重试次数，发送到死信队列，documentId: {}", message.getDocumentId());
             // 发送到死信队列
             rabbitTemplate.convertAndSend(
-                    RabbitMQConfig.DEAD_LETTER_EXCHANGE,
-                    RabbitMQConfig.DEAD_LETTER_ROUTING_KEY,
+                    RabbitMQConfig.OCR_DEAD_LETTER_EXCHANGE,
+                    RabbitMQConfig.OCR_ROUTING_KEY,
                     message
             );
+        }
+    }
+
+    /**
+     * 清理失败文档的已创建资源
+     * 包括：SFTP原始文件、OCR结果JSON、MongoDB文档内容
+     */
+    private void cleanupFailedDocument(Document document, OcrTaskMessage message) {
+        log.info("开始清理失败文档的资源，documentId: {}", document.getId());
+
+        try {
+            // 1. 删除SFTP上的原始文件
+            if (document.getRemoteFilePath() != null && !document.getRemoteFilePath().isEmpty()) {
+                boolean sftpDeleted = sftpUtil.deleteFile(document.getRemoteFilePath());
+                if (sftpDeleted) {
+                    log.info("SFTP原始文件删除成功: {}", document.getRemoteFilePath());
+                } else {
+                    log.warn("SFTP原始文件删除失败: {}", document.getRemoteFilePath());
+                }
+            }
+
+            // 2. 删除OCR结果JSON文件（如果已生成）
+            if (document.getOcrResultPath() != null && !document.getOcrResultPath().isEmpty()) {
+                boolean ocrResultDeleted = sftpUtil.deleteFile(document.getOcrResultPath());
+                if (ocrResultDeleted) {
+                    log.info("OCR结果文件删除成功: {}", document.getOcrResultPath());
+                } else {
+                    log.warn("OCR结果文件删除失败: {}", document.getOcrResultPath());
+                }
+            }
+
+            // 3. 删除MongoDB中的文档内容
+            try {
+                documentContentService.deleteByDocumentId(document.getId().toString(), document.getKbId());
+                log.info("MongoDB文档内容删除成功，documentId: {}", document.getId());
+            } catch (Exception e) {
+                log.error("MongoDB文档内容删除失败，documentId: {}", document.getId(), e);
+            }
+
+            // 注意：不删除PostgreSQL中的文档记录，保留用于失败追踪和重试
+            log.info("失败文档资源清理完成，documentId: {}", document.getId());
+
+        } catch (Exception e) {
+            log.error("清理失败文档资源时出错，documentId: {}", document.getId(), e);
         }
     }
 }

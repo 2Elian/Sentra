@@ -51,9 +51,4 @@ public class KnowledgeBase extends BaseEntity {
      * 知识库描述
      */
     private String description;
-
-    /**
-     * 关联的实体类型模板ID
-     */
-    private String entityTemplateId;
 }

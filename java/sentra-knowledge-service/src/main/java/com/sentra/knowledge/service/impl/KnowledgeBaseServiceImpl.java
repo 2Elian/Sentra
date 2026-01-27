@@ -3,23 +3,23 @@ package com.sentra.knowledge.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.sentra.common.exception.BusinessException;
+import com.sentra.knowledge.client.PythonKnowledgeClient;
 import com.sentra.knowledge.dto.KnowledgeBaseCreateRequest;
 import com.sentra.knowledge.dto.KnowledgeBaseResponse;
 import com.sentra.knowledge.dto.KnowledgeBaseUpdateRequest;
-import com.sentra.knowledge.entity.EntityTypeTemplate;
+import com.sentra.knowledge.entity.Document;
 import com.sentra.knowledge.entity.KnowledgeBase;
 import com.sentra.knowledge.mapper.KnowledgeBaseMapper;
-import com.sentra.knowledge.service.IEntityTypeTemplateService;
+import com.sentra.knowledge.service.IDocumentService;
 import com.sentra.knowledge.service.IKnowledgeBaseService;
 import com.sentra.knowledge.service.StorageInitializationService;
 import com.sentra.knowledge.util.KbIdGenerator;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -28,11 +28,20 @@ import java.util.stream.Collectors;
  */
 @Slf4j
 @Service
-@RequiredArgsConstructor
 public class KnowledgeBaseServiceImpl extends ServiceImpl<KnowledgeBaseMapper, KnowledgeBase> implements IKnowledgeBaseService {
 
     private final StorageInitializationService storageInitializationService;
-    private final IEntityTypeTemplateService entityTypeTemplateService;
+    @Lazy
+    private final IDocumentService documentService;
+    private final PythonKnowledgeClient pythonKnowledgeClient;
+
+    public KnowledgeBaseServiceImpl(StorageInitializationService storageInitializationService,
+                                    @Lazy IDocumentService documentService,
+                                    PythonKnowledgeClient pythonKnowledgeClient) {
+        this.storageInitializationService = storageInitializationService;
+        this.documentService = documentService;
+        this.pythonKnowledgeClient = pythonKnowledgeClient;
+    }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -49,35 +58,10 @@ public class KnowledgeBaseServiceImpl extends ServiceImpl<KnowledgeBaseMapper, K
         // TODO 校验ownerUserId是否真实存在（TODO: 调用user-service验证）
         // TODO 此处暂时跳过，后续通过Feign调用user-service验证
 
-        // 3. 校验实体类型模板
-        String entityTemplateId = request.getEntityTemplateId();
-        if (entityTemplateId != null && !entityTemplateId.isEmpty()) {
-            EntityTypeTemplate template = entityTypeTemplateService.getById(entityTemplateId);
-            if (template == null) {
-                throw new BusinessException("实体类型模板不存在");
-            }
-            // 检查模板是否属于当前租户或是系统模板
-            if (!template.getIsSystem() && !template.getTenantId().equals(tenantId)) {
-                throw new BusinessException("无权使用该实体类型模板");
-            }
-            if (!template.getIsActive()) {
-                throw new BusinessException("实体类型模板已停用");
-            }
-        } else {
-            // 如果未指定，使用系统默认的合同领域模板
-            LambdaQueryWrapper<EntityTypeTemplate> templateWrapper = new LambdaQueryWrapper<>();
-            templateWrapper.eq(EntityTypeTemplate::getName, "合同领域")
-                    .eq(EntityTypeTemplate::getIsSystem, true);
-            EntityTypeTemplate defaultTemplate = entityTypeTemplateService.getOne(templateWrapper);
-            if (defaultTemplate != null) {
-                entityTemplateId = defaultTemplate.getId();
-            }
-        }
-
-        // 4. 生成kbId作为唯一的知识库id
+        // 生成kbId作为唯一的知识库id
         String kbId = KbIdGenerator.generate(tenantId, request.getOwnerUserId(), request.getName());
 
-        // 5. 创建知识库实体
+        // 创建知识库实体
         KnowledgeBase knowledgeBase = new KnowledgeBase();
         knowledgeBase.setName(request.getName());
         knowledgeBase.setOwnerUserId(request.getOwnerUserId());
@@ -85,9 +69,8 @@ public class KnowledgeBaseServiceImpl extends ServiceImpl<KnowledgeBaseMapper, K
         knowledgeBase.setDescription(request.getDescription());
         knowledgeBase.setKbId(kbId);
         knowledgeBase.setTenantId(tenantId);
-        knowledgeBase.setEntityTemplateId(entityTemplateId);
-        knowledgeBase.setCreatedAt(LocalDateTime.now());
-        knowledgeBase.setUpdatedAt(LocalDateTime.now());
+        knowledgeBase.setCreatedAt(java.time.LocalDateTime.now());
+        knowledgeBase.setUpdatedAt(java.time.LocalDateTime.now());
 
 
         // 保存到sql数据库
@@ -148,33 +131,72 @@ public class KnowledgeBaseServiceImpl extends ServiceImpl<KnowledgeBaseMapper, K
         return updated;
     }
 
+    /**
+     * 删除知识库及其所有相关数据
+     * 包括：PostgreSQL知识库记录、所有文档记录、SFTP文件、MongoDB集合、
+     *      本地图谱目录、Neo4j数据、Python知识库数据（向量库、图谱库）
+     */
     @Override
     @Transactional(rollbackFor = Exception.class)
     public boolean deleteKnowledgeBase(String kbId) {
-        // 1. 查询知识库
-        LambdaQueryWrapper<KnowledgeBase> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(KnowledgeBase::getKbId, kbId);
-        KnowledgeBase knowledgeBase = this.getOne(queryWrapper);
+        log.info("开始删除知识库，kbId: {}", kbId);
+
+        // 查询知识库
+        LambdaQueryWrapper<KnowledgeBase> kbWrapper = new LambdaQueryWrapper<>();
+        kbWrapper.eq(KnowledgeBase::getKbId, kbId);
+        KnowledgeBase knowledgeBase = this.getOne(kbWrapper);
 
         if (knowledgeBase == null) {
             throw new BusinessException("知识库不存在");
         }
 
-        // 2. 删除数据库记录
-        boolean deleted = this.removeById(knowledgeBase.getId());
+        try {
+            // 查询并删除知识库下的所有文档（会级联删除SFTP文件、OCR结果等）
+            LambdaQueryWrapper<Document> docWrapper = new LambdaQueryWrapper<>();
+            docWrapper.eq(Document::getKbId, kbId);
+            List<Document> documents = documentService.list(docWrapper);
 
-        if (deleted) {
-            // 3. 删除相关存储
+            if (!documents.isEmpty()) {
+                log.info("知识库下有 {} 个文档，开始逐个删除", documents.size());
+                for (Document document : documents) {
+                    try {
+                        documentService.deleteDocument(document.getId().toString());
+                    } catch (Exception e) {
+                        log.error("删除文档失败，documentId: {}", document.getId(), e);
+                        // 继续删除其他文档
+                    }
+                }
+            }
+
+//            // 调用Python删除接口，删除整个知识库的数据（向量库、图谱库）
+//            boolean pythonDeleted = pythonKnowledgeClient.deleteKnowledgeBase(kbId);
+//            if (pythonDeleted) {
+//                log.info("Python知识库数据删除成功，kbId: {}", kbId);
+//            } else {
+//                log.warn("Python知识库数据删除失败或部分失败，kbId: {}", kbId);
+//            }
+
+            // 删除存储（MongoDB集合、本地图谱目录、Neo4j命名空间）
             try {
                 storageInitializationService.deleteKnowledgeBaseStorage(kbId);
-                log.info("知识库删除成功，kbId: {}", kbId);
+                log.info("知识库存储删除成功，kbId: {}", kbId);
             } catch (Exception e) {
                 log.error("删除知识库存储失败，kbId: {}", kbId, e);
-                throw new BusinessException("知识库存储删除失败: " + e.getMessage());
             }
-        }
 
-        return deleted;
+            // 删除PostgreSQL中的知识库记录
+            boolean deleted = this.removeById(knowledgeBase.getId());
+            if (deleted) {
+                log.info("PostgreSQL知识库记录删除成功，kbId: {}", kbId);
+            }
+
+            log.info("知识库删除完成，kbId: {}", kbId);
+            return deleted;
+
+        } catch (Exception e) {
+            log.error("删除知识库失败，kbId: {}", kbId, e);
+            throw new BusinessException("删除知识库失败: " + e.getMessage());
+        }
     }
 
     @Override

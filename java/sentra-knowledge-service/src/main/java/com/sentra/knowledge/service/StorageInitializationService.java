@@ -39,6 +39,7 @@ public class StorageInitializationService {
             log.info("Neo4j local directory created for kb: {}", kbId);
 
             // 在Neo4j中创建知识库命名空间
+            // TODO 这个不一定需要 因为我们的Graph数据 存储到了本地 而不是neo4j
             createNeo4jNamespace(kbId);
             log.info("Neo4j namespace created for kb: {}", kbId);
 

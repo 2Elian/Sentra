@@ -1,7 +1,7 @@
 package com.sentra.knowledge.client;
 
-import com.sentra.knowledge.client.dto.D2KGRequest;
-import com.sentra.knowledge.client.dto.D2KGResponse;
+import com.sentra.knowledge.client.dto.KbPipelineRequest;
+import com.sentra.knowledge.client.dto.KbPipelineResponse;
 import com.sentra.knowledge.client.dto.MdParseRequest;
 import com.sentra.knowledge.client.dto.MdParseResponse;
 import lombok.extern.slf4j.Slf4j;
@@ -12,6 +12,9 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
+
+import java.util.List;
+import java.util.Map;
 
 /**
  * Python知识服务客户端
@@ -66,50 +69,140 @@ public class PythonKnowledgeClient {
     }
 
     /**
-     * 调用Python D2KG接口构建知识图谱
+     * 调用Python知识库构建接口 (KbPipeline)
      *
-     * @param kbId        知识库ID
-     * @param mdContent   Markdown内容
-     * @param entityTypes 实体类型配置（可选）
-     * @return 文档唯一标识（用于定位GraphML文件）
+     * @param docID          文档ID
+     * @param kbID           知识库ID
+     * @param content        Markdown内容
+     * @param title          文档标题
+     * @param entityTypes    实体类型列表 List[str]
+     * @param entityTypesDes 实体类型描述 Dict[str, str]
+     * @return 知识库构建响应
      */
-    public String buildKnowledgeGraph(String kbId, String mdContent, java.util.Map<String, String> entityTypes) {
-        String url = pythonBaseUrl + "/sentra/v1/d2kg/build";
+    public KbPipelineResponse buildKnowledgeBase(
+            String docID,
+            String kbID,
+            String content,
+            String title,
+            List<String> entityTypes,
+            Map<String, String> entityTypesDes
+    ) {
+        String url = pythonBaseUrl + "/sentra/v1/knowledge/build";
 
-        log.info("调用Python D2KG接口，kbId: {}, entityTypes数量: {}", kbId,
-                entityTypes != null ? entityTypes.size() : 0);
+        log.info("调用Python知识库构建接口 (KbPipeline)，docID: {}, kbID: {}, entityTypes数量: {}",
+                docID, kbID, entityTypes != null ? entityTypes.size() : 0);
 
         try {
-            D2KGRequest request = new D2KGRequest();
-            request.setContractId(kbId);
-            request.setContractText(mdContent);
+            KbPipelineRequest request = new KbPipelineRequest();
+            request.setDocID(docID);
+            request.setKbID(kbID);
+            request.setContent(content);
+            request.setTitle(title);
             request.setEntityTypes(entityTypes);
+            request.setEntityTypesDes(entityTypesDes);
 
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
-            HttpEntity<D2KGRequest> entity = new HttpEntity<>(request, headers);
+            HttpEntity<KbPipelineRequest> entity = new HttpEntity<>(request, headers);
 
-            ResponseEntity<D2KGResponse> response = restTemplate.postForEntity(
+            ResponseEntity<KbPipelineResponse> response = restTemplate.postForEntity(
                     url,
                     entity,
-                    D2KGResponse.class
+                    KbPipelineResponse.class
             );
 
             if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
-                D2KGResponse body = response.getBody();
-                String documentUniqueId = body.getDocumentUniqueId();
-                log.info("D2KG调用成功，documentUniqueId: {}, graphNamespace: {}, nodes: {}, edges: {}",
-                        documentUniqueId, body.getGraphNamespace(),
-                        body.getNodes() != null ? body.getNodes().size() : 0,
-                        body.getEdges() != null ? body.getEdges().size() : 0);
-                return documentUniqueId;
+                KbPipelineResponse body = response.getBody();
+                log.info("KbPipeline调用成功，status: {}, totalChunks: {}, totalEntities: {}, totalEdges: {}, totalQac: {}",
+                        body.getStatus(),
+                        body.getTotalChunks(),
+                        body.getTotalEntities(),
+                        body.getTotalEdges(),
+                        body.getTotalQac());
+                return body;
             } else {
-                throw new RuntimeException("D2KG响应失败: " + response.getStatusCode());
+                throw new RuntimeException("KbPipeline响应失败: " + response.getStatusCode());
             }
 
         } catch (Exception e) {
-            log.error("调用Python D2KG接口失败", e);
-            throw new RuntimeException("D2KG调用失败: " + e.getMessage(), e);
+            log.error("调用Python知识库构建接口失败 (KbPipeline)", e);
+            throw new RuntimeException("KbPipeline调用失败: " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * 调用Python删除接口，删除知识库中的文档数据
+     *
+     * @param kbId            知识库ID
+     * @param documentUniqueId 文档唯一标识
+     * @return 是否删除成功
+     */
+    public boolean deleteDocumentFromKnowledgeBase(String kbId, String documentUniqueId) {
+        String url = pythonBaseUrl + "/sentra/v1/knowledge/delete";
+
+        log.info("调用Python删除接口，kbId: {}, documentUniqueId: {}", kbId, documentUniqueId);
+
+        try {
+            // 构建请求体
+            java.util.Map<String, String> request = new java.util.HashMap<>();
+            request.put("kbId", kbId);
+            request.put("documentUniqueId", documentUniqueId);
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            HttpEntity<java.util.Map<String, String>> entity = new HttpEntity<>(request, headers);
+
+            ResponseEntity<String> response = restTemplate.postForEntity(url, entity, String.class);
+
+            if (response.getStatusCode().is2xxSuccessful()) {
+                log.info("Python删除接口调用成功，kbId: {}, documentUniqueId: {}", kbId, documentUniqueId);
+                return true;
+            } else {
+                log.warn("Python删除接口返回非成功状态，statusCode: {}", response.getStatusCode());
+                return false;
+            }
+
+        } catch (Exception e) {
+            log.error("调用Python删除接口失败，kbId: {}, documentUniqueId: {}", kbId, documentUniqueId, e);
+            // 不抛出异常，允许继续清理其他数据
+            return false;
+        }
+    }
+
+    /**
+     * 调用Python删除接口，删除整个知识库的数据
+     *
+     * @param kbId 知识库ID
+     * @return 是否删除成功
+     */
+    public boolean deleteKnowledgeBase(String kbId) {
+        String url = pythonBaseUrl + "/sentra/v1/knowledge/delete/kb";
+
+        log.info("调用Python知识库删除接口，kbId: {}", kbId);
+
+        try {
+            // 构建请求体
+            java.util.Map<String, String> request = new java.util.HashMap<>();
+            request.put("kbId", kbId);
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            HttpEntity<java.util.Map<String, String>> entity = new HttpEntity<>(request, headers);
+
+            ResponseEntity<String> response = restTemplate.postForEntity(url, entity, String.class);
+
+            if (response.getStatusCode().is2xxSuccessful()) {
+                log.info("Python知识库删除接口调用成功，kbId: {}", kbId);
+                return true;
+            } else {
+                log.warn("Python知识库删除接口返回非成功状态，statusCode: {}", response.getStatusCode());
+                return false;
+            }
+
+        } catch (Exception e) {
+            log.error("调用Python知识库删除接口失败，kbId: {}", kbId, e);
+            // 不抛出异常，允许继续清理其他数据
+            return false;
         }
     }
 }

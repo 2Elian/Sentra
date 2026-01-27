@@ -4,6 +4,8 @@ server:
 spring:
   application:
     name: sentra-knowledge-service
+  main:
+    allow-circular-references: true
   cloud:
     nacos:
       discovery:
