@@ -1,4 +1,5 @@
 import re
+import os
 from collections import Counter, defaultdict
 from typing import List, Tuple, Dict, Optional
 
@@ -296,9 +297,10 @@ class KgBuilder:
         )
         # namespace_postfix = compute_content_hash(md_content)
         namespace = f"{settings.kg.namespace}_{kb_id}_{doc_id}"
-        os.makedirs(namespace, exist_ok=True)
+        workdir = f"{settings.kg.working_dir}/{kb_id}/{namespace}"
+        os.makedirs(workdir, exist_ok=True)
         kg_instance = NetworkXStorage(
-            f"{settings.kg.working_dir}/{kb_id}/{namespace}", namespace=namespace
+            workdir, namespace=namespace
         )
         # step3: 全局拓扑对齐 --> 将不同文本块中抽取的同一个实体统一成一个全局ID。
         nodes = defaultdict(list)
