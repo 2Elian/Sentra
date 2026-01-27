@@ -1,7 +1,7 @@
 import os
 import json
 
-def save_qa_pair(self, save_dir, results_aggregated, results_multihop, results_cot):
+def save_qa_pair(save_dir, results_aggregated, results_multihop, results_cot):
     os.makedirs(save_dir, exist_ok=True)
     save_path_aggregated = f"{save_dir}/aggregated.json"
     save_path_multihop = f"{save_dir}/multi_hop.json"
