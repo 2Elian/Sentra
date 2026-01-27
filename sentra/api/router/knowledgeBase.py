@@ -34,7 +34,10 @@ async def build_knowledge_base(request: KbPipelineRequest,
         )
         return KbPipelineReponse(
             status=StatusType.SUCCESS,
-            data=result
+            total_chunks=result.total_chunks,
+            total_entities=result.total_entities,
+            total_edges=result.total_edges,
+            total_qac=result.total_qac
         )
     except Exception as e:
         logger.error(f"Failed to build knowledge: {e}", exc_info=True)

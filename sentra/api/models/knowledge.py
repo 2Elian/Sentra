@@ -38,4 +38,7 @@ class KbPipelineRequest(BaseModel):
 
 class KbPipelineReponse(BaseModel):
     status: StatusType
-    data: Optional[BuildResult] = None
+    total_chunks: int
+    total_entities: int
+    total_edges: int
+    total_qac: int
