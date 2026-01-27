@@ -9,10 +9,12 @@ from .extractor import GraphExtractor
 from .resolver import EntityResolver
 from .clustering import CommunityDetector
 from .summarizer import CommunitySummarizer
+from .service import KgBuilder
 
 __all__ = [
     "GraphExtractor",
     "EntityResolver",
     "CommunityDetector",
     "CommunitySummarizer",
+    "KgBuilder",
 ]

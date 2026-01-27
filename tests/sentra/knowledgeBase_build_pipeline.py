@@ -130,7 +130,6 @@ This agreement shall be effective from January 1, 2024 to December 31, 2024.
     # Step 3: Create pipeline
     print("\n[3] Creating pipeline manager...")
     pipeline = KnowledgeBasePipelineManager(
-        config=config,
         llm_client=llm_client,
         embedding_client=embedding_client
     )

@@ -1,18 +1,48 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-# @Time    : 2026/1/12 15:57
-# @Author  : lizimo@nuist.edu.cn
-# @File    : sentra/api/models/common.py
-# @Description:
-from typing import Optional, Dict, Any, List
-from pydantic import BaseModel
-from datetime import datetime
+from enum import Enum
+from typing import List, Dict, Any, Optional
+from pydantic import BaseModel, Field
 
-class ContractGraphRequest(BaseModel):
-    """Request model for contract graph construction"""
-    contract_text: Optional[str] = None # OCR extract md_context
-    contract_id: Optional[str] = None # the contract id 唯一的id
+class StatusType(str, Enum):
+    """Strategies for chunking documents."""
+    SUCCESS = "success"  # 成功状态码
+    FAILED = "failed"    # 失败状态码
 
-class CommonResponse(BaseModel):
-    """Response model for"""
-    status: str
+    OK_CREATED = "OK_CREATED"
+    OK_UPDATED = "OK_UPDATED"
+    OK_DELETED = "OK_DELETED"
+    OK_PARTIAL = "OK_PARTIAL"
+
+    # ===== 通用客户端错误 =====
+    ERR_BAD_REQUEST = "ERR_BAD_REQUEST"
+    ERR_INVALID_PARAM = "ERR_INVALID_PARAM"
+    ERR_UNAUTHORIZED = "ERR_UNAUTHORIZED"
+    ERR_FORBIDDEN = "ERR_FORBIDDEN"
+    ERR_NOT_FOUND = "ERR_NOT_FOUND"
+    ERR_CONFLICT = "ERR_CONFLICT"
+
+    # ===== 通用服务端错误 =====
+    ERR_INTERNAL = "ERR_INTERNAL"
+    ERR_TIMEOUT = "ERR_TIMEOUT"
+    ERR_SERVICE_UNAVAILABLE = "ERR_SERVICE_UNAVAILABLE"
+
+    # ===== 知识库 / Pipeline =====
+    PIPE_BUILD_FAILED = "PIPE_BUILD_FAILED"
+    PIPE_INGEST_FAILED = "PIPE_INGEST_FAILED"
+    PIPE_INDEX_FAILED = "PIPE_INDEX_FAILED"
+    PIPE_GRAPH_FAILED = "PIPE_GRAPH_FAILED"
+    PIPE_VECTOR_FAILED = "PIPE_VECTOR_FAILED"
+
+    # ===== LLM / Embedding =====
+    LLM_CALL_FAILED = "LLM_CALL_FAILED"
+    LLM_RATE_LIMIT = "LLM_RATE_LIMIT"
+    LLM_INVALID_RESPONSE = "LLM_INVALID_RESPONSE"
+    EMBEDDING_FAILED = "EMBEDDING_FAILED"
+
+    # ===== 存储相关 =====
+    STORE_WRITE_FAILED = "STORE_WRITE_FAILED"
+    STORE_READ_FAILED = "STORE_READ_FAILED"
+    STORE_CONNECTION_FAILED = "STORE_CONNECTION_FAILED"
+
+    # ===== 权限 / 租户 =====
+    TENANT_NOT_FOUND = "TENANT_NOT_FOUND"
+    TENANT_ACCESS_DENIED = "TENANT_ACCESS_DENIED"

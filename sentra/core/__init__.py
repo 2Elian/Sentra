@@ -30,6 +30,7 @@ from .indexing.vector import (
 from .indexing.graph import (
     GraphExtractor,
     EntityResolver,
+    KgBuilder,
 )
 
 from .storage import (
@@ -47,6 +48,11 @@ from .pipeline import (
 from .llm_server import (
     OpenAIClient,
     OpenAIEmbedder,
+)
+
+from .agents import (
+    OCRAgent,
+    GenerateService
 )
 
 __all__ = [
@@ -72,6 +78,7 @@ __all__ = [
     # Graph Indexing
     "GraphExtractor",
     "EntityResolver",
+    "KgBuilder",
 
     # Storage
     "BaseVectorStore",
@@ -85,5 +92,9 @@ __all__ = [
 
     # llm and embedding
     "OpenAIClient",
-    "OpenAIEmbedder"
+    "OpenAIEmbedder",
+
+    # agents
+    "OCRAgent",
+    "GenerateService"
 ]

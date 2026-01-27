@@ -5,8 +5,6 @@ This module provides the main orchestrator that coordinates all
 stages of the ETL pipeline.
 """
 import asyncio
-import os
-import json
 from typing import Optional, Dict, Any, List
 from pydantic import BaseModel, Field
 from sentra.utils.logger import logger
@@ -20,6 +18,7 @@ from sentra.core.storage import InMemoryVectorStore, BaseVectorStore
 from sentra.core.llm_server import BaseLLMClient, LLMFactory, BaseEmbedder
 from sentra.core.agents import GenerateService
 from sentra.utils.common import time_record
+from sentra.utils.save_json import save_qa_pair
 from sentra import settings
 
 
@@ -83,7 +82,6 @@ class KnowledgeBasePipelineManager:
 
     def __init__(
         self,
-        config: BuildConfiguration,
         llm_client: Optional[BaseLLMClient] = None,
         embedding_client: Optional[BaseEmbedder] = None,
         vector_store: Optional[BaseVectorStore] = None
@@ -96,7 +94,7 @@ class KnowledgeBasePipelineManager:
             llm_client: LLM client for extraction and summarization
             vector_store: Vector store instance (created if not provided)
         """
-        self.config = config
+        self.config = BuildConfiguration()
         self.llm_client = llm_client or LLMFactory.create_llm_cli()
         if vector_store is None:
             dimension = EMBED_DIM.get(settings.embeddings.model_name)
@@ -164,7 +162,7 @@ class KnowledgeBasePipelineManager:
         logger.info("[5/5] Graph Question Answer pair Generate...")
         results_aggregated, results_multihop, results_cot = await self.gqag_agent.build(namespace, kb_id)
         save_dir = f"{settings.kg.working_dir}/{kb_id}/{namespace}"
-        self._save_qa_pair(save_dir, results_aggregated, results_multihop, results_cot)
+        save_qa_pair(save_dir, results_aggregated, results_multihop, results_cot)
         qa_pair = results_aggregated + results_multihop + results_cot
 
         # Build result
@@ -213,15 +211,3 @@ class KnowledgeBasePipelineManager:
         results = await self.vector_store.search(query_embedding, top_k=top_k)
         return results
         # TODO 复用retrieval包
-
-    def _save_qa_pair(self, save_dir, results_aggregated, results_multihop, results_cot):
-        os.makedirs(save_dir, exist_ok=True)
-        save_path_aggregated = f"{save_dir}/aggregated.json"
-        save_path_multihop = f"{save_dir}/multi_hop.json"
-        save_path_cot = f"{save_dir}/cot.json"
-        with open(save_path_aggregated, 'w', encoding='utf-8') as f:
-            json.dump(results_aggregated, f, ensure_ascii=False, indent=2)
-        with open(save_path_multihop, 'w', encoding='utf-8') as f:
-            json.dump(results_multihop, f, ensure_ascii=False, indent=2)
-        with open(save_path_cot, 'w', encoding='utf-8') as f:
-            json.dump(results_cot, f, ensure_ascii=False, indent=2)

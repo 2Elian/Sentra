@@ -4,47 +4,43 @@
 # @Author  : lizimo@nuist.edu.cn
 # @File    : dependencies.py
 # @Description: 全局依赖注入
-from abc import ABC, abstractmethod
 from typing import Optional, Union
 
 from sentra.core.llm_server import LLMFactory
-from sentra.core.knowledge_graph.graph_store import neo4j_importer
-from sentra.core.knowledge_graph import KgBuilder
-from sentra.core.agents import GenerateService, OCRAgent
+from sentra.core import (
+    KgBuilder,
+    GenerateService,
+    OCRAgent,
+    KnowledgeBasePipelineManager
+)
 
-class sentraFactory(ABC):
-
-    @abstractmethod
-    def create_current_contract_graphBuild_workflow(self) -> KgBuilder:
-        raise NotImplementedError
-    @abstractmethod
-    def create_self_qa_workflow(self) -> GenerateService:
-        raise NotImplementedError
-
-class ProductionWorkflowFactory(sentraFactory):
+class ProductionWorkflowFactory:
     def __init__(self):
         self.llm_langChain = LLMFactory.create_llm()
         self.llm_sentra = LLMFactory.create_llm_cli()
-        self.neo_4j: neo4j_importer
-        # embedding model
-        # milvus db
+        self.embed_client = LLMFactory.create_embedding_model()
 
-    # 如果有异步的self需要传递给后续的router 在这里添加
     async def initialize(self):
+        # 这里留空 是因为如果有异步需要初始化 就在这里
         # self.llm_langChain = await LLMFactory.create_llm()
         # self.llm_sentra = await LLMFactory.create_llm_cli()
         pass
 
     def create_current_contract_graphBuild_workflow(self) -> KgBuilder:
         return KgBuilder(self.llm_sentra)
-    def create_self_qa_workflow(self) -> GenerateService:
-        return GenerateService(llm_sentra=self.llm_sentra)
+
     def create_md_parser_workflow(self) -> OCRAgent:
         return OCRAgent(llm_cli=self.llm_sentra)
 
+    def create_gqag_agent_workflow(self) -> GenerateService:
+        return GenerateService(llm_sentra=self.llm_sentra)
+
+    def create_kb_pipeline_workflow(self, vector_store = None) -> KnowledgeBasePipelineManager:
+        return KnowledgeBasePipelineManager(llm_client=self.llm_sentra, embedding_client=self.embed_client, vector_store=vector_store)
 
 
-_factory: Optional[sentraFactory] = None
+_factory: Optional[ProductionWorkflowFactory] = None
+
 
 async def get_factory() -> ProductionWorkflowFactory:
     global _factory
@@ -52,13 +48,3 @@ async def get_factory() -> ProductionWorkflowFactory:
         _factory = ProductionWorkflowFactory()
         await _factory.initialize()
     return _factory
-
-async def get_kgBuilder_async() -> KgBuilder:
-    factory = await get_factory()
-    return factory.create_current_contract_graphBuild_workflow()
-async def get_generatorSerivce_async() -> GenerateService:
-    factory = await get_factory()
-    return factory.create_self_qa_workflow()
-async def get_ocrService_async() -> OCRAgent:
-    factory = await get_factory()
-    return factory.create_md_parser_workflow()
