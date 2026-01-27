@@ -23,8 +23,6 @@ class GraphExtractor:
     def __init__(
         self,
         llm_client: BaseLLMClient,
-        entity_types: List[str] = None,
-        entity_des: List[str] = None,
     ):
         """
         Initialize graph extractor.
@@ -35,17 +33,6 @@ class GraphExtractor:
             entity_des: List of entity des to extract (None for default)
         """
         self.llm_client = llm_client
-
-        # Use provided types or import defaults
-        if entity_types is None:
-            raise ValueError("Entity types not provided")
-        else:
-            self.entity_types = entity_types
-
-        if entity_des is None:
-            raise ValueError("Entity des not provided")
-        else:
-            self.entity_des = entity_des
 
     async def extract(
         self,
