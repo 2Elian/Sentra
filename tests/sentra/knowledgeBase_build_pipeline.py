@@ -143,7 +143,9 @@ This agreement shall be effective from January 1, 2024 to December 31, 2024.
     result = await pipeline.build_knowledge_base(
         markdown_content=markdown_content,
         kb_id="9eo00123490k",
-        doc_id="example_doc_001"
+        doc_id="example_doc_001",
+        entity_types=ENTITY_LIST,
+        entity_types_des=ENTITY_DES
     )
 
     print("-" * 80)
