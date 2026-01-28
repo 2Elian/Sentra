@@ -25,6 +25,9 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.*;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.io.InputStream;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -182,17 +185,17 @@ public class DocumentServiceImpl extends ServiceImpl<DocumentMapper, Document> i
                 }
             }
 
-            // 删除OCR结果JSON文件
-            if (document.getOcrResultPath() != null && !document.getOcrResultPath().isEmpty()) {
-                boolean ocrResultDeleted = sftpUtil.deleteFile(document.getOcrResultPath());
-                if (ocrResultDeleted) {
-                    log.info("OCR结果文件删除成功: {}", document.getOcrResultPath());
-                } else {
-                    log.warn("OCR结果文件删除失败: {}", document.getOcrResultPath());
-                }
-            }
+//            // TODO 删除OCR结果文件 因为OCR结果文件在服务器上的名称是无序的 所以这个可能无法删除
+//            if (document.getOcrResultPath() != null && !document.getOcrResultPath().isEmpty()) {
+//                boolean ocrResultDeleted = sftpUtil.deleteFile(document.getOcrResultPath());
+//                if (ocrResultDeleted) {
+//                    log.info("OCR结果文件删除成功: {}", document.getOcrResultPath());
+//                } else {
+//                    log.warn("OCR结果文件删除失败: {}", document.getOcrResultPath());
+//                }
+//            }
 
-//            // 调用Python删除接口，删除知识库中的数据（向量库、图谱库）
+//            // 调用Python删除接口，删除知识库中的向量库对应的embedding
 //            // TODO python接口还没写好嘿嘿
 //            if (document.getDocumentUniqueId() != null && !document.getDocumentUniqueId().isEmpty()) {
 //                boolean pythonDeleted = pythonKnowledgeClient.deleteDocumentFromKnowledgeBase(
@@ -210,7 +213,7 @@ public class DocumentServiceImpl extends ServiceImpl<DocumentMapper, Document> i
 
             // 删除本地图谱GraphML文件
             if (document.getDocumentUniqueId() != null && !document.getDocumentUniqueId().isEmpty()) {
-                deleteLocalGraphFile(document.getKbId(), document.getDocumentUniqueId());
+                deleteLocalGraphDir(document.getKbId(), document.getDocumentUniqueId());
             }
 
             // 删除Neo4j中的文档节点
@@ -243,6 +246,7 @@ public class DocumentServiceImpl extends ServiceImpl<DocumentMapper, Document> i
 
     /**
      * 删除本地图谱GraphML文件
+     * 已作废
      */
     private void deleteLocalGraphFile(String kbId, String documentUniqueId) {
         try {
@@ -262,6 +266,49 @@ public class DocumentServiceImpl extends ServiceImpl<DocumentMapper, Document> i
             }
         } catch (Exception e) {
             log.error("删除本地图谱文件失败，kbId: {}, documentUniqueId: {}", kbId, documentUniqueId, e);
+        }
+    }
+
+    /**
+     * 删除本地图谱目录
+     */
+    private void deleteLocalGraphDir(String kbId, String documentUniqueId) {
+        String graphPath = storageProperties.getGraphPath();
+
+        Path graphDir = Paths.get(
+                graphPath,
+                kbId,
+                "graph_" + kbId + "_" + documentUniqueId
+        );
+
+        if (!Files.exists(graphDir)) {
+            log.debug("本地图谱目录不存在: {}", graphDir.toAbsolutePath());
+            return;
+        }
+
+        try {
+            Files.walkFileTree(graphDir, new SimpleFileVisitor<>() {
+
+                @Override
+                public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
+                        throws IOException {
+                    Files.deleteIfExists(file);
+                    return FileVisitResult.CONTINUE;
+                }
+
+                @Override
+                public FileVisitResult postVisitDirectory(Path dir, IOException exc)
+                        throws IOException {
+                    Files.deleteIfExists(dir);
+                    return FileVisitResult.CONTINUE;
+                }
+            });
+
+            log.info("本地图谱目录删除成功: {}", graphDir.toAbsolutePath());
+
+        } catch (IOException e) {
+            log.error("删除本地图谱目录失败, kbId: {}, documentUniqueId: {}",
+                    kbId, documentUniqueId, e);
         }
     }
 

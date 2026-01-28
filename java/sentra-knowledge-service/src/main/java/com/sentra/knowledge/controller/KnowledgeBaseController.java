@@ -35,7 +35,7 @@ public class KnowledgeBaseController {
      * 更新知识库
      */
     @PutMapping("/{kbId}")
-    public Result<Boolean> update(@PathVariable String kbId,
+    public Result<Boolean> update(@PathVariable("kbId") String kbId,
                                   @RequestBody @Valid KnowledgeBaseUpdateRequest request) {
         boolean updated = kbService.updateKnowledgeBase(kbId, request);
         return Result.success(updated);
@@ -45,7 +45,7 @@ public class KnowledgeBaseController {
      * 删除知识库
      */
     @DeleteMapping("/{kbId}")
-    public Result<Boolean> delete(@PathVariable String kbId) {
+    public Result<Boolean> delete(@PathVariable("kbId") String kbId) {
         boolean deleted = kbService.deleteKnowledgeBase(kbId);
         return Result.success(deleted);
     }
@@ -54,7 +54,7 @@ public class KnowledgeBaseController {
      * 获取知识库详情
      */
     @GetMapping("/{kbId}")
-    public Result<KnowledgeBaseResponse> get(@PathVariable String kbId) {
+    public Result<KnowledgeBaseResponse> get(@PathVariable("kbId") String kbId) {
         KnowledgeBaseResponse response = kbService.getKnowledgeBaseByKbId(kbId);
         return Result.success(response);
     }
@@ -72,7 +72,7 @@ public class KnowledgeBaseController {
      * 获取用户的知识库列表
      */
     @GetMapping("/owner/{ownerUserId}")
-    public Result<List<KnowledgeBaseResponse>> listByOwner(@PathVariable String ownerUserId,
+    public Result<List<KnowledgeBaseResponse>> listByOwner(@PathVariable("ownerUserId") String ownerUserId,
                                                             @RequestHeader("X-Tenant-Id") String tenantId) {
         List<KnowledgeBaseResponse> list = kbService.listByOwner(tenantId, ownerUserId);
         return Result.success(list);

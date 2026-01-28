@@ -53,7 +53,7 @@ public class DocumentController {
      * 获取文档详情
      */
     @GetMapping("/{documentId}")
-    public Result<Document> get(@PathVariable String documentId) {
+    public Result<Document> get(@PathVariable("documentId") String documentId) {
         Document document = documentService.getById(documentId);
         if (document == null) {
             return Result.error("文档不存在");
@@ -66,7 +66,7 @@ public class DocumentController {
      * 会同时删除：SFTP文件、OCR结果、Python知识库数据、本地图谱、Neo4j节点、MongoDB内容
      */
     @DeleteMapping("/{documentId}")
-    public Result<Boolean> delete(@PathVariable String documentId) {
+    public Result<Boolean> delete(@PathVariable("documentId") String documentId) {
         boolean deleted = documentService.deleteDocument(documentId);
         return Result.success(deleted);
     }
