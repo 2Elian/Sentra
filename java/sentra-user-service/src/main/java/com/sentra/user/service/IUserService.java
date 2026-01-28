@@ -1,8 +1,11 @@
 package com.sentra.user.service;
 
+import com.sentra.user.vo.UserListVO;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.sentra.user.entity.User;
 import com.sentra.user.enums.UserRole;
+
+import java.util.List;
 
 public interface IUserService extends IService<User> {
     /**
@@ -40,4 +43,11 @@ public interface IUserService extends IService<User> {
      * @return 更新后的用户
      */
     User updateUser(String id, com.sentra.user.dto.UpdateUserRequest request);
+
+    /**
+     * 列出当前租户的所有用户
+     *
+     * @return 用户列表
+     */
+    List<UserListVO> listUsersInCurrentTenant();
 }

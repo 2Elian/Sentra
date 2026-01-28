@@ -1,3 +1,4 @@
+com\sentra\user\vo\LoginResponse.class
 com\sentra\user\entity\User.class
 com\sentra\user\dto\RegisterRequest.class
 com\sentra\user\dto\UpdateUserRequest.class
@@ -5,6 +6,7 @@ com\sentra\user\enums\TenantType.class
 com\sentra\user\enums\TenantStatus.class
 com\sentra\user\mapper\TenantMapper.class
 com\sentra\user\controller\AuthController.class
+com\sentra\user\vo\UserListVO.class
 com\sentra\user\controller\TenantController.class
 com\sentra\user\service\impl\UserServiceImpl.class
 com\sentra\user\service\ITenantService.class

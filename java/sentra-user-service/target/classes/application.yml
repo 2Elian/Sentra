@@ -22,14 +22,18 @@ spring:
         dialect: org.hibernate.dialect.PostgreSQLDialect
 
 sa-token:
-  token-name: satoken
+  # 修改为与前端一致的 token 名称
+  token-name: Authorization
   timeout: 2592000
   active-timeout: -1
   is-concurrent: true
-  is-share: true
+  # 改为 false，每次登录创建新 token
+  is-share: false
   token-style: uuid
   is-read-body: false
   is-read-header: true
+  # 允许 bearer 前缀
+  is-bearer: true
 
 mybatis-plus:
   configuration:

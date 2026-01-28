@@ -5,6 +5,7 @@ G:\项目成果打包\基于图结构的文档问答助手\dev\java-dev\sentra-k
 G:\项目成果打包\基于图结构的文档问答助手\dev\java-dev\sentra-knowledge-service\src\main\java\com\sentra\knowledge\client\PythonKnowledgeClient.java
 G:\项目成果打包\基于图结构的文档问答助手\dev\java-dev\sentra-knowledge-service\src\main\java\com\sentra\knowledge\config\RabbitMQConfig.java
 G:\项目成果打包\基于图结构的文档问答助手\dev\java-dev\sentra-knowledge-service\src\main\java\com\sentra\knowledge\config\StorageProperties.java
+G:\项目成果打包\基于图结构的文档问答助手\dev\java-dev\sentra-knowledge-service\src\main\java\com\sentra\knowledge\consumer\DeadLetterConsumer.java
 G:\项目成果打包\基于图结构的文档问答助手\dev\java-dev\sentra-knowledge-service\src\main\java\com\sentra\knowledge\consumer\KbBuildConsumer.java
 G:\项目成果打包\基于图结构的文档问答助手\dev\java-dev\sentra-knowledge-service\src\main\java\com\sentra\knowledge\consumer\OcrConsumer.java
 G:\项目成果打包\基于图结构的文档问答助手\dev\java-dev\sentra-knowledge-service\src\main\java\com\sentra\knowledge\controller\DocumentController.java

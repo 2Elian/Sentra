@@ -15,6 +15,7 @@ com\sentra\knowledge\mapper\DocumentMapper.class
 com\sentra\knowledge\service\impl\EntityTypeDefinitionServiceImpl.class
 com\sentra\knowledge\dto\KnowledgeBaseUpdateRequest.class
 com\sentra\knowledge\mapper\EntityTypeTemplateMapper.class
+com\sentra\knowledge\service\impl\DocumentServiceImpl$1.class
 com\sentra\knowledge\util\SftpUtil.class
 com\sentra\knowledge\consumer\OcrConsumer.class
 com\sentra\knowledge\config\StorageProperties$SftpConfig.class
@@ -39,6 +40,7 @@ com\sentra\knowledge\service\IDocumentContentService.class
 com\sentra\knowledge\entity\EntityTypeDefinition.class
 com\sentra\knowledge\dto\EntityTypeTemplateCreateRequest.class
 com\sentra\knowledge\messaging\OcrTaskMessage.class
+com\sentra\knowledge\consumer\DeadLetterConsumer.class
 com\sentra\knowledge\dto\KnowledgeBaseResponse.class
 com\sentra\knowledge\client\PythonKnowledgeClient.class
 com\sentra\knowledge\consumer\KbBuildConsumer.class

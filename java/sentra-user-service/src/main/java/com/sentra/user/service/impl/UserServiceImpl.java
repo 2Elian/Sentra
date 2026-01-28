@@ -3,7 +3,9 @@ package com.sentra.user.service.impl;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.sentra.common.exception.BusinessException;
 import com.sentra.user.dto.UpdateUserRequest;
+import com.sentra.user.vo.UserListVO;
 import com.sentra.user.entity.User;
 import com.sentra.user.enums.UserRole;
 import com.sentra.user.mapper.UserMapper;
@@ -14,10 +16,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import cn.dev33.satoken.stp.StpUtil;
 
 import com.sentra.user.entity.Tenant;
-import com.sentra.user.mapper.TenantMapper;
 import com.sentra.user.service.ITenantService;
+
+import java.util.List;
 
 @Service
 @Transactional
@@ -95,5 +99,45 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         this.updateById(user);
         
         return user;
+    }
+
+    @Override
+    public List<UserListVO> listUsersInCurrentTenant() {
+
+        // 使用 String 类型获取用户 ID，因为数据库中 id 字段是 VARCHAR 类型
+        String userId = StpUtil.getLoginIdAsString();
+
+        User currentUser = this.getById(userId);
+        if (currentUser == null) {
+            throw new BusinessException("当前用户不存在");
+        }
+
+        if (!UserRole.ADMIN.equals(currentUser.getRole())) {
+            throw new BusinessException("无权限访问该接口");
+        }
+
+        String tenantId = currentUser.getTenantId();
+
+        Tenant tenant = tenantService.getById(tenantId);
+        if (tenant == null) {
+            throw new BusinessException("租户不存在");
+        }
+
+        List<User> users = this.list(
+                new LambdaQueryWrapper<User>()
+                        .eq(User::getTenantId, tenantId)
+        );
+
+        return users.stream().map(user -> {
+            UserListVO vo = new UserListVO();
+            vo.setId(user.getId());  // 添加用户 ID
+            vo.setUsername(user.getUsername());
+            vo.setRole(user.getRole().name());
+            vo.setTenantId(user.getTenantId());
+            vo.setTenantName(tenant.getName());
+            vo.setCreatedAt(user.getCreatedAt());
+            vo.setUpdatedAt(user.getUpdatedAt());
+            return vo;
+        }).toList();
     }
 }
