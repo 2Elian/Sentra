@@ -10,6 +10,7 @@ G:\项目成果打包\基于图结构的文档问答助手\dev\java-dev\sentra-k
 G:\项目成果打包\基于图结构的文档问答助手\dev\java-dev\sentra-knowledge-service\src\main\java\com\sentra\knowledge\consumer\OcrConsumer.java
 G:\项目成果打包\基于图结构的文档问答助手\dev\java-dev\sentra-knowledge-service\src\main\java\com\sentra\knowledge\controller\DocumentController.java
 G:\项目成果打包\基于图结构的文档问答助手\dev\java-dev\sentra-knowledge-service\src\main\java\com\sentra\knowledge\controller\EntityTypeTemplateController.java
+G:\项目成果打包\基于图结构的文档问答助手\dev\java-dev\sentra-knowledge-service\src\main\java\com\sentra\knowledge\controller\FileController.java
 G:\项目成果打包\基于图结构的文档问答助手\dev\java-dev\sentra-knowledge-service\src\main\java\com\sentra\knowledge\controller\KnowledgeBaseController.java
 G:\项目成果打包\基于图结构的文档问答助手\dev\java-dev\sentra-knowledge-service\src\main\java\com\sentra\knowledge\document\DocumentContent.java
 G:\项目成果打包\基于图结构的文档问答助手\dev\java-dev\sentra-knowledge-service\src\main\java\com\sentra\knowledge\dto\EntityTypeDefinitionRequest.java

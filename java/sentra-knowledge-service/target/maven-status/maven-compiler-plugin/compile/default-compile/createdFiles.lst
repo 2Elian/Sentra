@@ -43,6 +43,7 @@ com\sentra\knowledge\messaging\OcrTaskMessage.class
 com\sentra\knowledge\consumer\DeadLetterConsumer.class
 com\sentra\knowledge\dto\KnowledgeBaseResponse.class
 com\sentra\knowledge\client\PythonKnowledgeClient.class
+com\sentra\knowledge\controller\FileController.class
 com\sentra\knowledge\consumer\KbBuildConsumer.class
 com\sentra\knowledge\controller\KnowledgeBaseController.class
 com\sentra\knowledge\service\impl\DocumentServiceImpl.class

@@ -4,6 +4,8 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.sentra.knowledge.entity.Document;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
+
 public interface IDocumentService extends IService<Document> {
     /**
      * 上传文档并构造知识库
@@ -23,4 +25,12 @@ public interface IDocumentService extends IService<Document> {
      * @return 是否删除成功
      */
     boolean deleteDocument(String documentId);
+
+    /**
+     * 获取文档产品路径
+     *
+     * @param documentId 文档ID
+     * @return 产品路径列表
+     */
+    List<String> getProductPath(String documentId, String kbId);
 }

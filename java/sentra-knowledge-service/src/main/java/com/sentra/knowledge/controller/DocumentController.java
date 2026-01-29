@@ -70,4 +70,14 @@ public class DocumentController {
         boolean deleted = documentService.deleteDocument(documentId);
         return Result.success(deleted);
     }
+
+    /**
+     * 获取某个文档知识库的产物路径
+     */
+    @GetMapping("/product-path/{documentId}")
+    public Result<List<String>> getProductPath(@PathVariable("documentId") String documentId,
+                                               @RequestParam("kbId") String kbId) {
+        List<String> productPath = documentService.getProductPath(documentId, kbId);
+        return Result.success(productPath);
+    }
 }

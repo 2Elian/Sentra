@@ -31,6 +31,8 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.io.InputStream;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -242,6 +244,32 @@ public class DocumentServiceImpl extends ServiceImpl<DocumentMapper, Document> i
             log.error("删除文档失败，documentId: {}", documentId, e);
             throw new BusinessException("删除文档失败: " + e.getMessage());
         }
+    }
+
+    /**
+     * 获取文档产品路径
+     *
+     * @param documentId 文档ID
+     * @return 产品路径列表
+     */
+    @Override
+    public List<String> getProductPath(String documentId, String kbId) {
+
+        String rootPath = "G:\\项目成果打包\\基于图结构的文档问答助手\\logs\\sentra\\graph";
+
+        String dirName = String.format("graph_%s_%s", kbId, documentId);
+
+        String baseDir = String.join("\\", rootPath, kbId, dirName);
+
+        List<String> paths = new ArrayList<>();
+
+        paths.add(baseDir + "\\" + dirName + ".graphml");
+        paths.add(baseDir + "\\chunks.json");
+        paths.add(baseDir + "\\aggregated.json");
+        paths.add(baseDir + "\\multi_hop.json");
+        paths.add(baseDir + "\\cot.json");
+
+        return paths;
     }
 
     /**

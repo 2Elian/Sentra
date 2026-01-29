@@ -163,7 +163,14 @@ public class EntityTypeTemplateServiceImpl extends ServiceImpl<EntityTypeTemplat
         // 4. 检查是否有知识库正在使用该模板
         // TODO: 添加知识库表的关联检查
 
-        // 5. 删除模板（级联删除实体类型定义）
+        // 5. 先删除关联的实体类型定义
+        long deletedDefinitions = definitionMapper.delete(
+                new LambdaQueryWrapper<EntityTypeDefinition>()
+                        .eq(EntityTypeDefinition::getTemplateId, templateId)
+        );
+        log.info("删除实体类型模板的关联定义，templateId: {}, count: {}", templateId, deletedDefinitions);
+
+        // 6. 再删除模板本身
         this.removeById(templateId);
 
         log.info("删除实体类型模板成功，templateId: {}", templateId);

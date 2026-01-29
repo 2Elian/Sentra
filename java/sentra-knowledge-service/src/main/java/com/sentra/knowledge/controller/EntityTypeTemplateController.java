@@ -33,8 +33,8 @@ public class EntityTypeTemplateController {
     @PostMapping
     public Result<EntityTypeTemplateResponse> createTemplate(
             @Valid @RequestBody EntityTypeTemplateCreateRequest request,
-            @RequestHeader("X-TenantId") String tenantId,
-            @RequestHeader("X-UserId") String userId
+            @RequestHeader("X-Tenant-Id") String tenantId,
+            @RequestHeader("X-User-Id") String userId
     ) {
         log.info("创建实体类型模板，name: {}, tenantId: {}", request.getName(), tenantId);
         EntityTypeTemplateResponse response = templateService.createTemplate(request, tenantId, userId);
@@ -51,9 +51,9 @@ public class EntityTypeTemplateController {
      */
     @PutMapping("/{templateId}")
     public Result<Void> updateTemplate(
-            @PathVariable String templateId,
+            @PathVariable("templateId") String templateId,
             @Valid @RequestBody EntityTypeTemplateCreateRequest request,
-            @RequestHeader("X-UserId") String userId
+            @RequestHeader("X-User-Id") String userId
     ) {
         log.info("更新实体类型模板，templateId: {}", templateId);
         templateService.updateTemplate(templateId, request, userId);
@@ -69,8 +69,8 @@ public class EntityTypeTemplateController {
      */
     @DeleteMapping("/{templateId}")
     public Result<Void> deleteTemplate(
-            @PathVariable String templateId,
-            @RequestHeader("X-TenantId") String tenantId
+            @PathVariable("templateId") String templateId,
+            @RequestHeader("X-Tenant-Id") String tenantId
     ) {
         log.info("删除实体类型模板，templateId: {}", templateId);
         templateService.deleteTemplate(templateId, tenantId);
@@ -86,8 +86,8 @@ public class EntityTypeTemplateController {
      */
     @GetMapping("/{templateId}")
     public Result<EntityTypeTemplateResponse> getTemplateDetail(
-            @PathVariable String templateId,
-            @RequestHeader("X-TenantId") String tenantId
+            @PathVariable("templateId") String templateId,
+            @RequestHeader("X-Tenant-Id") String tenantId
     ) {
         EntityTypeTemplateResponse response = templateService.getTemplateDetail(templateId, tenantId);
         return Result.success(response);
@@ -101,7 +101,7 @@ public class EntityTypeTemplateController {
      */
     @GetMapping
     public Result<List<EntityTypeTemplateResponse>> listTemplates(
-            @RequestHeader("X-TenantId") String tenantId
+            @RequestHeader("X-Tenant-Id") String tenantId
     ) {
         List<EntityTypeTemplateResponse> templates = templateService.listTemplates(tenantId);
         return Result.success(templates);
