@@ -5,6 +5,8 @@ This module provides the main orchestrator that coordinates all
 stages of the ETL pipeline.
 """
 import asyncio
+import json
+from pathlib import Path
 from typing import Optional, Dict, Any, List
 from pydantic import BaseModel, Field
 from sentra.utils.logger import logger
@@ -164,6 +166,7 @@ class KnowledgeBasePipelineManager:
         save_dir = f"{settings.kg.working_dir}/{kb_id}/{namespace}"
         save_qa_pair(save_dir, results_aggregated, results_multihop, results_cot)
         qa_pair = results_aggregated + results_multihop + results_cot
+        self._save_chunk(chunks_with_embeddings, save_dir)
 
         # Build result
         result = BuildResult(
@@ -211,3 +214,11 @@ class KnowledgeBasePipelineManager:
         results = await self.vector_store.search(query_embedding, top_k=top_k)
         return results
         # TODO 复用retrieval包
+
+    def _save_chunk(self, chunks: List[Chunk], save_dir: str):
+        path = Path(save_dir)
+        path.mkdir(parents=True, exist_ok=True)
+        file_path = path / "chunks.json"
+        data = [c.model_dump(mode="json") for c in chunks]
+        with open(file_path, "w", encoding="utf-8") as f:
+            json.dump(data, f, ensure_ascii=False, indent=2)
