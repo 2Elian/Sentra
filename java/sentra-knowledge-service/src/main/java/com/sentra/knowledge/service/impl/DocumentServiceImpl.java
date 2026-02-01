@@ -254,8 +254,8 @@ public class DocumentServiceImpl extends ServiceImpl<DocumentMapper, Document> i
      */
     @Override
     public List<String> getProductPath(String documentId, String kbId) {
-
-        String rootPath = "G:\\项目成果打包\\基于图结构的文档问答助手\\logs\\sentra\\graph";
+        String rootPath = storageProperties.getGraphPath();
+        log.info("生产路径是： {}", rootPath);
 
         String dirName = String.format("graph_%s_%s", kbId, documentId);
 

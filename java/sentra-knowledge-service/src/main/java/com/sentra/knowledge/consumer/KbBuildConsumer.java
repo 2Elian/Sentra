@@ -5,6 +5,7 @@ import com.sentra.common.enums.DocumentStatus;
 import com.sentra.common.exception.BusinessException;
 import com.sentra.knowledge.client.PythonKnowledgeClient;
 import com.sentra.knowledge.config.RabbitMQConfig;
+import com.sentra.knowledge.config.StorageProperties;
 import com.sentra.knowledge.document.DocumentContent;
 import com.sentra.knowledge.entity.Document;
 import com.sentra.knowledge.entity.EntityTypeDefinition;
@@ -15,6 +16,7 @@ import com.sentra.knowledge.service.IDocumentService;
 import com.sentra.knowledge.service.IEntityTypeDefinitionService;
 import com.sentra.knowledge.service.IEntityTypeTemplateService;
 import com.sentra.knowledge.service.IKnowledgeBaseService;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
@@ -46,7 +48,14 @@ public class KbBuildConsumer {
     private final IEntityTypeDefinitionService entityTypeDefinitionService;
     private final IEntityTypeTemplateService entityTypeTemplateService;
     private final Neo4jClient neo4jClient;
-    private final String graphPath = "G:\\项目成果打包\\基于图结构的文档问答助手\\logs\\sentra\\graph"; // TODO 从配置读取
+    private final StorageProperties storageProperties;
+    private String graphPath;
+
+    @PostConstruct
+    public void init() {
+        this.graphPath = storageProperties.getGraphPath();
+        log.info("Graph path initialized: {}", graphPath);
+    }
 
     /**
      * 监听知识库构建队列，处理知识库构建任务

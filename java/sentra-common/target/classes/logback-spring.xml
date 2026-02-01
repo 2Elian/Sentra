@@ -8,7 +8,7 @@
     <springProperty scope="context" name="springAppName" source="spring.application.name" />
 
     <!-- 定义日志文件路径 -->
-    <property name="LOG_HOME" value="G:/项目成果打包/基于图结构的文档问答助手/logs/java" />
+    <property name="LOG_HOME" value="E:/项目备份/sentra/logs/java" />
     <property name="LOG_FILE" value="${LOG_HOME}/${springAppName}/${springAppName}.log" />
 
     <!-- 定义日志格式 -->
