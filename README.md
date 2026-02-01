@@ -4,7 +4,7 @@
 ![Java](https://img.shields.io/badge/Java-17-blue.svg)
 ![Python](https://img.shields.io/badge/python-3.10+-green.svg)
 ![React](https://img.shields.io/badge/React-18-red.svg)
-![lmdeploy](https://img.shields.io/badge/lmdeploy-0.11.1-orange.svg)
+![lmdeploy](https://img.shields.io/badge/lmdeploy-0.11.0-orange.svg)
 ![Version](https://img.shields.io/badge/version-0.0.1-brightgreen.svg)
 [![open issues](https://img.shields.io/github/issues-raw/2Elian/cra)](https://github.com/2Elian/cra/issues)
 
