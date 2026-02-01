@@ -1,5 +1,5 @@
 kg:
-  working_dir: 'G:\项目成果打包\基于图结构的文档问答助手\logs\sentra\graph'
+  working_dir: 'E:\项目备份\sentra\logs\sentra\graph'
   namespace: "graph"
   max_loop: 3
   max_summary_tokens: 200

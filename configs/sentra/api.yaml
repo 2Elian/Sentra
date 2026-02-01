@@ -1,5 +1,5 @@
 app:
-  name: "Contract Compliance Agent"
+  name: "Sentra-Agent"
   version: "0.1.0"
   env: "development"
   debug: true
